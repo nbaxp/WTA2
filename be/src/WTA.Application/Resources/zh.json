@@ -1,0 +1,20 @@
+{
+  "Test": "测试",
+  "CompareAttribute": "“{0}” 和 “{1}” 不匹配。",
+  "FileExtensionsAttribute": "字段 “{0}” 只接受一下扩展名的文件: {1}",
+  "MaxLengthAttribute": "字段 “{0}” 的最大长度为 {1}。",
+  "MinLengthAttribute": "字段 “{0}” 的最小长度为 {1}。",
+  "RangeAttribute": "字段 “{0}” 必需在 {1} 和 {2} 之间。",
+  "RegularExpressionAttribute": "字段 “{0}” 必需匹配 {1}。",
+  "RequiredAttribute": "字段 “{0}” 是必需的。",
+  "StringLengthAttribute": "字段 “{0}” 的最大长度为 {1}。",
+  "StringLengthAttributeIncludingMinimum": "字段 “{0}” 的长度在 {2} 和 {1} 之间。",
+  "DataTypeAttribute_CreditCard": "字段 “{0}” 不是有效的信用卡号码。",
+  "DataTypeAttribute_EmailAddress": "字段 “{0}” 不是有效的 Email 地址。",
+  "DataTypeAttribute_PhoneNumber": "字段 “{0}” 不是有效的手机号码。",
+  "DataTypeAttribute_Url": "字段 “{0}” 不是有效的 Url。",
+  "DataTypeAttribute_Upload": "字段 “{0}” 的扩展名必须为：{1} 。",
+  "DataTypeAttribute_DateTime": "字段 “{0}” 不是有效的日期格式。",
+  "CustomValidationAttribute": "“{0}” 是无效的。",
+  "ValidationAttribute": "字段 “{0}” 是无效的。"
+}

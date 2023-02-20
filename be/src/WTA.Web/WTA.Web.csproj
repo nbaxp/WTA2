@@ -1,0 +1,17 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <TargetFramework>net7.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Services\WTA.Application.BaseData\WTA.Application.BaseData.csproj" />
+    <ProjectReference Include="..\Services\WTA.Application.Identity\WTA.Application.Identity.csproj" />
+    <ProjectReference Include="..\Services\WTA.Application.Wms\WTA.Application.Wms.csproj" />
+    <ProjectReference Include="..\WTA.Core\WTA.Core.csproj" />
+    <ProjectReference Include="..\WTA.Infrastructure\WTA.Infrastructure.csproj" />
+  </ItemGroup>
+
+</Project>

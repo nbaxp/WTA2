@@ -1,0 +1,11 @@
+.vs
+bin/
+obj/
+
+.bak
+.suo
+.log
+*.db
+*.db-shm
+*.db-wal
+

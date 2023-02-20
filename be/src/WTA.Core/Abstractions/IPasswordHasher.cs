@@ -1,0 +1,8 @@
+namespace WTA.Core.Abstractions;
+
+public interface IPasswordHasher
+{
+    string CreateSalt();
+
+    string HashPassword(string password, string salt);
+}
