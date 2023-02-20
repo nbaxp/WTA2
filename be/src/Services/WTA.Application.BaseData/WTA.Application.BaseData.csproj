@@ -19,7 +19,6 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\WTA.Application\WTA.Application.csproj" />
-    <ProjectReference Include="..\..\WTA.Core\WTA.Core.csproj" />
     <ProjectReference Include="..\WTA.Application.Identity\WTA.Application.Identity.csproj" />
   </ItemGroup>
 

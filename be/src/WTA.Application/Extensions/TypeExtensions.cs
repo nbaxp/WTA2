@@ -1,4 +1,5 @@
 using System.ComponentModel.DataAnnotations;
+using System.Reflection;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.DataAnnotations;
@@ -13,6 +14,11 @@ namespace WTA.Application.Extensions;
 
 public static class TypeExtensions
 {
+    public static string GetDisplayName(this Type type)
+    {
+        return type.GetCustomAttribute<DisplayAttribute>()?.Name ?? type.Name;
+    }
+
     public static object? GetMetadataForType(this Type modelType, IServiceProvider serviceProvider, bool showForList = false)
     {
         using var scope = serviceProvider.CreateScope();

@@ -13,7 +13,6 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\WTA.Application\WTA.Application.csproj" />
-    <ProjectReference Include="..\..\WTA.Core\WTA.Core.csproj" />
   </ItemGroup>
 
 </Project>

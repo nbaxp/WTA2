@@ -18,8 +18,4 @@
 	  <PackageReference Include="Microsoft.Extensions.FileProviders.Embedded" Version="7.0.3" />
 	</ItemGroup>
 
-	<ItemGroup>
-		<ProjectReference Include="..\WTA.Core\WTA.Core.csproj" />
-	</ItemGroup>
-
 </Project>
