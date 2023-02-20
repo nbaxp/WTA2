@@ -1,5 +1,8 @@
 using System.Linq.Expressions;
+using System.Reflection;
 using Microsoft.EntityFrameworkCore;
+using WTA.Application.Extensions;
+using WTA.Core.Application;
 using WTA.Core.Domain;
 using WTA.Core.Extensions;
 
@@ -7,18 +10,29 @@ namespace WTA.Infrastructure.Data;
 
 public static class ModelBuilderExtensions
 {
-    public static ModelBuilder ConfigComment(this ModelBuilder builder)
+    public static ModelBuilder ConfigTable(this ModelBuilder builder)
     {
         foreach (var item in builder.Model.GetEntityTypes().Where(o => o.ClrType.IsAssignableTo(typeof(BaseEntity))).ToList())
         {
-            builder.Entity(item.Name).ToTable(o => o.HasComment(item.ClrType.GetDisplayName()));
-            foreach (var prop in item.GetProperties())
+            builder.Entity(item.Name, o =>
             {
-                if (prop.PropertyInfo != null)
+                var prefix = item.ClrType.Assembly.GetCustomAttribute<ModuleAttribute>()?.Name ?? "";
+                if (!string.IsNullOrEmpty(prefix))
                 {
-                    builder.Entity(item.ClrType).Property(prop.Name).HasComment(prop.PropertyInfo.PropertyType.GetDisplayName());
+                    prefix = $"{prefix}_";
                 }
-            }
+                var tableName = $"{prefix}{item.ClrType.Name}";
+                o.ToTable(tableName);
+                o.ToTable(t => t.HasComment(item.ClrType.GetDisplayName()));
+                //
+                foreach (var prop in item.GetProperties())
+                {
+                    if (prop.PropertyInfo != null)
+                    {
+                        o.Property(prop.Name).HasComment(prop.PropertyInfo.GetDisplayName());
+                    }
+                }
+            });
         }
         return builder;
     }

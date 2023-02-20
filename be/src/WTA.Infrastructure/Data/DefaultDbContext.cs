@@ -38,7 +38,7 @@ public class DefaultDbContext : DbContext
         // 默认创建 DbContext 的 History 表
         WebApp.DbContextList?.ForEach(o => o.OnModelCreating(modelBuilder));
         //
-        modelBuilder.ConfigComment();
+        modelBuilder.ConfigTable();
         modelBuilder.ConfigKey();
         modelBuilder.ConfigConcurrencyStamp();
         modelBuilder.ConfigTreeNode();
