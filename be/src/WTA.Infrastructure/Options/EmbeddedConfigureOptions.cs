@@ -13,7 +13,7 @@ public class EmbeddedConfigureOptions : IPostConfigureOptions<StaticFileOptions>
         {
             new ManifestEmbeddedFileProvider(typeof(Resource).Assembly, "wwwroot")
         };
-        WebApp.ModuleAssemblies
+        WebApp.ModuleAssemblies?
             .ForEach(o =>
             {
                 try

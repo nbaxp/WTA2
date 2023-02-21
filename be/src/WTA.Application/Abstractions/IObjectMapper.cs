@@ -1,4 +1,4 @@
-﻿namespace WTA.Core.Abstractions;
+namespace WTA.Core.Abstractions;
 
 public interface IObjectMapper
 {

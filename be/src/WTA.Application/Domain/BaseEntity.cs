@@ -1,14 +1,27 @@
+using System.ComponentModel.DataAnnotations;
 using Microsoft.Extensions.DependencyInjection;
 using WTA.Core.Abstractions;
 
-namespace WTA.Core.Domain;
+namespace WTA.Application.Domain;
 
 public abstract class BaseEntity
 {
-    public Guid Id { get; set; }
-
     public BaseEntity()
     {
-        Id = App.Services!.CreateScope().ServiceProvider.GetService<IGuidGenerator>()!.Create();
+        this.Id = App.Services!.CreateScope().ServiceProvider.GetService<IGuidGenerator>()!.Create();
     }
+
+    [ScaffoldColumn(false)]
+    public string? ConcurrencyStamp { get; set; }
+    public DateTimeOffset CreatedAt { get; set; }
+    public string? CreatedBy { get; set; }
+    public bool Disabled { get; set; }
+    public int DisplayOrder { get; set; }
+    public Guid Id { get; set; }
+    public bool IsDeleted { get; set; }
+    public bool IsDeletedBy { get; set; }
+    public DateTimeOffset? ModifiedAt { get; set; }
+    public string? ModifiedBy { get; set; }
+    [ScaffoldColumn(false)]
+    public string? Tenant { get; set; }
 }

@@ -1,6 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using WTA.Core.Abstractions;
-using WTA.Core.Domain;
+using WTA.Application.Domain;
 
 namespace WTA.Infrastructure.Data;
 

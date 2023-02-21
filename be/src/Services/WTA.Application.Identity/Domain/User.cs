@@ -1,19 +1,13 @@
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
-using WTA.Core.Domain;
+using WTA.Application.Domain;
 
 namespace WTA.Application.Identity.Domain;
 
+[Display(Name = "用户")]
 public class User : BaseEntity
 {
     public int AccessFailedCount { get; set; }
-
-    [ScaffoldColumn(false)]
-    public string? ConcurrencyStamp { get; set; }
-
-    public DateTimeOffset? CreatedAt { get; set; }
-
-    public string? CreatedBy { get; set; }
 
     public string? Email { get; set; }
 
@@ -22,10 +16,6 @@ public class User : BaseEntity
     public bool LockoutEnabled { get; set; }
 
     public DateTimeOffset? LockoutEnd { get; set; }
-
-    public DateTimeOffset? ModifiedAt { get; set; }
-
-    public string? ModifiedBy { get; set; }
 
     public string? Name { get; set; }
 
@@ -52,4 +42,5 @@ public class User : BaseEntity
     [Display(Name = "用户名")]
     [ReadOnly(true)]
     public string? UserName { get; set; }
+    public List<UserRole> UserRoles { get; set; } = new List<UserRole>();
 }

@@ -29,16 +29,16 @@ using Serilog;
 using Serilog.Debugging;
 using Swashbuckle.AspNetCore.SwaggerGen;
 using WTA.Application;
+using WTA.Application.Abstractions;
+using WTA.Application.Abstractions.Controllers;
 using WTA.Application.Resources;
-using WTA.Core;
 using WTA.Core.Abstractions;
 using WTA.Core.Application;
-using WTA.Core.Application.Controllers;
 using WTA.Core.Extensions;
 using WTA.Infrastructure.Authentication;
-using WTA.Infrastructure.Controllers;
 using WTA.Infrastructure.Data;
 using WTA.Infrastructure.DataAnnotations;
+using WTA.Infrastructure.ExportImport;
 using WTA.Infrastructure.Extensions;
 using WTA.Infrastructure.Localization;
 using WTA.Infrastructure.Options;
@@ -80,9 +80,9 @@ public class WebApp
             .ToList();
     }
 
-    public static List<IDbContext> DbContextList { get; private set; }
-    public static List<Assembly> ModuleAssemblies { get; private set; }
-    public static List<IStartup> StartupList { get; private set; }
+    public static List<IDbContext>? DbContextList { get; private set; }
+    public static List<Assembly>? ModuleAssemblies { get; private set; }
+    public static List<IStartup>? StartupList { get; private set; }
     public string Name { get; }
 
     public virtual void Configure(WebApplication app)
@@ -110,6 +110,7 @@ public class WebApp
         AddDefaultServices(builder);
         AddDefaultOptions(builder);
         builder.Services.ConfigureOptions(new EmbeddedConfigureOptions());
+        builder.Services.AddTransient(typeof(IExportImportService<>), typeof(DefaultExportImportService<>));
         //builder.Services.AddEventBus();
         //builder.Services.AddTransient(typeof(IApplicationService<>), typeof(ApplicationService<>));
     }
@@ -148,12 +149,12 @@ public class WebApp
             }, writeToProviders: true);
             this.ConfigureServices(builder);
             configureBuilder?.Invoke(builder);
-            StartupList.ForEach(o => o.ConfigureServices(builder));
+            StartupList?.ForEach(o => o.ConfigureServices(builder));
             var app = builder.Build();
             app.UseSerilogRequestLogging();
             this.Configure(app);
             configureApp?.Invoke(app);
-            StartupList.ForEach(o => o.Configure(app));
+            StartupList?.ForEach(o => o.Configure(app));
             app.Run();
         }
         catch (Exception ex)

@@ -1,4 +1,4 @@
-﻿using Omu.ValueInjecter;
+using Omu.ValueInjecter;
 using WTA.Core.Abstractions;
 
 namespace WTA.Infrastructure.Mappers;

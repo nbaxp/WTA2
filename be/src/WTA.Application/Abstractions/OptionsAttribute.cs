@@ -1,4 +1,4 @@
-﻿namespace WTA.Core.Abstractions;
+namespace WTA.Core.Abstractions;
 
 [AttributeUsage(AttributeTargets.Class)]
 public class OptionsAttribute : Attribute

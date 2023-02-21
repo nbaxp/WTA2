@@ -1,7 +1,7 @@
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 
-namespace WTA.Core;
+namespace WTA.Application;
 
 public class App
 {

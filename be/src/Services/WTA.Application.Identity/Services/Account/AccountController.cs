@@ -4,13 +4,13 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Localization;
 using Microsoft.Extensions.Options;
-using WTA.Application.Authentication;
+using WTA.Application.Abstractions;
+using WTA.Application.Abstractions.Json;
+using WTA.Application.Abstractions.Token;
 using WTA.Application.Extensions;
 using WTA.Application.Identity.Controllers;
 using WTA.Application.Identity.Domain;
-using WTA.Application.Json;
 using WTA.Core.Abstractions;
-using WTA.Core.Application.Token;
 
 namespace WTA.Application.Identity.Services.Account;
 

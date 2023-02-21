@@ -1,4 +1,4 @@
-namespace WTA.Core.Domain;
+namespace WTA.Application.Domain;
 
 public interface IConcurrencyStamp
 {

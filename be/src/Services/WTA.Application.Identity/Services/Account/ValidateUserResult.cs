@@ -1,5 +1,5 @@
+using WTA.Application.Abstractions.Token;
 using WTA.Application.Identity.Domain;
-using WTA.Core.Application.Token;
 
 namespace WTA.Application.Identity.Services.Account;
 

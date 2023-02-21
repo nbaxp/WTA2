@@ -1,4 +1,4 @@
-﻿namespace WTA.Core.Domain;
+namespace WTA.Application.Domain;
 
 [AttributeUsage(AttributeTargets.Class, AllowMultiple = false, Inherited = true)]
 public class GroupAttribute : Attribute

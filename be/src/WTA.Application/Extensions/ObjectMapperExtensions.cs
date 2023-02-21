@@ -1,4 +1,5 @@
 using Microsoft.Extensions.DependencyInjection;
+using WTA.Application;
 using WTA.Core.Abstractions;
 
 namespace WTA.Core.Extensions;
