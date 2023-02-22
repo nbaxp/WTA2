@@ -1,3 +1,5 @@
+using Microsoft.AspNetCore.WebUtilities;
+
 namespace WTA.Application.Domain;
 
 public abstract class BaseTreeEntity<T> : BaseEntity where T : class
@@ -11,7 +13,7 @@ public abstract class BaseTreeEntity<T> : BaseEntity where T : class
 
     public void UpdatePath(BaseTreeEntity<T>? parent)
     {
-        this.Path = $"/{Convert.ToBase64String(this.Id.ToByteArray())}";
+        this.Path = $"/{WebEncoders.Base64UrlEncode(this.Id.ToByteArray())}";
         if (parent != null)
         {
             this.Path = $"{parent.Path}{this.Path}";
