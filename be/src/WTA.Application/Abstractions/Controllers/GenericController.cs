@@ -19,7 +19,7 @@ public class GenericController<TEntity, TModel, TListModel, TSearchModel> : Cont
   where TEntity : class
   where TModel : class
   where TListModel : class
-  where TSearchModel : PaginationViewModel<TListModel>
+  where TSearchModel : PaginationModel<TListModel>
 {
     private readonly IRepository<TEntity> _repository;
 

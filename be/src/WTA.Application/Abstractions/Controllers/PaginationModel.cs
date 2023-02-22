@@ -1,6 +1,6 @@
-﻿namespace WTA.Application.Abstractions.Controllers;
+namespace WTA.Application.Abstractions.Controllers;
 
-public class PaginationViewModel<T>
+public class PaginationModel<T>
 {
     public int PageIndex { get; set; } = 1;
     public int PageSize { get; set; } = 10;

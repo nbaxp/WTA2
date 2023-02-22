@@ -24,7 +24,7 @@ public class GenericControllerFeatureProvider : IApplicationFeatureProvider<Cont
                 o.BaseType.IsGenericType &&
                 o.BaseType.GetGenericTypeDefinition() == typeof(GenericController<,,,>)))
             {
-                var searchModelType = typeof(PaginationViewModel<>).MakeGenericType(entityType);
+                var searchModelType = typeof(PaginationModel<>).MakeGenericType(entityType);
                 feature.Controllers.Add(typeof(GenericController<,,,>).MakeGenericType(entityType, entityType, entityType, searchModelType).GetTypeInfo());
             }
         }

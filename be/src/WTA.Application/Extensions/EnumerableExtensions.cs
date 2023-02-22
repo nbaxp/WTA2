@@ -1,4 +1,4 @@
-﻿namespace WTA.Core.Extensions;
+namespace WTA.Core.Extensions;
 
 public static class EnumerableExtensions
 {
@@ -13,7 +13,7 @@ public static class EnumerableExtensions
     /// <summary>
     /// 根据条件查询
     /// </summary>
-    public static IEnumerable<T> WhereIf<T>(this IEnumerable<T> source, bool condition, Func<T, bool> predicate)
+    public static IQueryable<T> WhereIf<T>(this IQueryable<T> source, bool condition, Func<T, bool> predicate)
     {
         return condition ? source.Where(predicate) : source;
     }

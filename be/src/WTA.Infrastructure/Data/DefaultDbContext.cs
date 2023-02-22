@@ -78,14 +78,14 @@ public class DefaultDbContext : DbContext
                 }
             });
             // 配置 TreeEntity
-            if (item.ClrType.IsAssignableTo(typeof(TreeEntity<>)))
+            if (item.ClrType.IsAssignableTo(typeof(BaseTreeEntity<>)))
             {
-                modelBuilder.Entity(item.ClrType).HasOne(nameof(TreeEntity<BaseEntity>.Parent))
-                    .WithMany(nameof(TreeEntity<BaseEntity>.Children))
-                    .HasForeignKey(new string[] { nameof(TreeEntity<BaseEntity>.ParentId) })
+                modelBuilder.Entity(item.ClrType).HasOne(nameof(BaseTreeEntity<BaseEntity>.Parent))
+                    .WithMany(nameof(BaseTreeEntity<BaseEntity>.Children))
+                    .HasForeignKey(new string[] { nameof(BaseTreeEntity<BaseEntity>.ParentId) })
                     .OnDelete(DeleteBehavior.SetNull);
-                modelBuilder.Entity(item.ClrType).Property(nameof(TreeEntity<BaseEntity>.Name)).IsRequired();
-                modelBuilder.Entity(item.ClrType).Property(nameof(TreeEntity<BaseEntity>.Number)).IsRequired();
+                modelBuilder.Entity(item.ClrType).Property(nameof(BaseTreeEntity<BaseEntity>.Name)).IsRequired();
+                modelBuilder.Entity(item.ClrType).Property(nameof(BaseTreeEntity<BaseEntity>.Number)).IsRequired();
                 // builder.Entity(item.ClrType).Property(nameof(TreeEntity<BaseEntity>.Path)).IsRequired();
             }
             // 配置多租户

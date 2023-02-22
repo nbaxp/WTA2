@@ -33,7 +33,7 @@ public class IdentityDbContext : IDbContext
             }
         });
         dbContext.SaveChanges();
-        dbContext.Set<Department>().Add(new Department
+        var department = new Department
         {
             Name = "1",
             Number = "1",
@@ -57,7 +57,9 @@ public class IdentityDbContext : IDbContext
                      Number="1.2",
                 }
             }
-        });
+        };
+        department.UpdatePath(null);
+        dbContext.Set<Department>().Add(department);
         dbContext.SaveChanges();
     }
 
