@@ -1,0 +1,13 @@
+{
+  "recommendations": [
+    "editorconfig.editorconfig",
+    "esbenp.prettier-vscode",
+    "dbaeumer.vscode-eslint",
+    "stylelint.vscode-stylelint",
+    "davidanson.vscode-markdownlint",
+    "bierner.lit-html",
+    "vue.volar",
+    "rvest.vs-code-prettier-eslint",
+    "ritwickdey.liveserver"
+  ]
+}

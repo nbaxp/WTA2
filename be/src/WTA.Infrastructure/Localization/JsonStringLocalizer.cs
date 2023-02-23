@@ -13,7 +13,7 @@ public class JsonStringLocalizer : IStringLocalizer
         _dictionary = new Lazy<Dictionary<string, string>>(() =>
         {
             var result = new Dictionary<string, string>();
-            WebApp.ModuleAssemblies
+            WebApp.ModuleAssemblies?
                .ForEach(assembly =>
                {
                    var filePath = $"{assembly.GetName().Name}.Resources.{Thread.CurrentThread.CurrentCulture.Name}.json";

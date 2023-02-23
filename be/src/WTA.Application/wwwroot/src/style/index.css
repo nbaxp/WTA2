@@ -1,0 +1,143 @@
+body {
+  margin: 0;
+  padding: 0;
+  -webkit-font-smoothing: antialiased;
+}
+
+a {
+  text-decoration: none;
+}
+
+h1 {
+  color: var(--el-color-primary);
+  font-size: 18px;
+  line-height: 1.5em;
+}
+
+#app {
+  width: 100vw;
+  height: 100vh;
+  overflow: hidden;
+  background-color: var(--el-bg-color-page);
+}
+
+.el-header {
+  position: fixed;
+  z-index: 10;
+  width: 100%;
+  background-color: var(--el-menu-bg-color);
+  border-bottom: solid 1px var(--el-menu-border-color);
+}
+
+.el-menu--horizontal {
+  border-bottom: none;
+}
+
+.el-menu--vertical {
+  min-height: 100%;
+}
+
+.el-main {
+  min-height: calc(100% - 60px);
+}
+
+.el-main.tabs {
+  min-height: calc(100% - 60px - 41px);
+}
+
+.el-footer {
+  width: 100%;
+  padding: 0;
+  border-top: solid 1px var(--el-menu-border-color);
+}
+
+.el-scrollbar {
+  width: 100%;
+}
+
+.el-scrollbar__view {
+  height: 100%;
+}
+
+.el-table thead .cell,
+.el-table .el-table__cell .cell,
+.el-table .el-table-fixed-column--left .cell,
+.el-table .el-table-fixed-column--right .cell {
+  white-space: nowrap;
+}
+
+button.el-button:focus {
+  color: var(--el-button-text-color);
+  background-color: var(--el-button-bg-color);
+  border-color: var(--el-button-border-color);
+}
+
+.el-form.query .el-slider,
+.el-form-item .el-form-item .el-input.el-input--suffix {
+  width: 195px;
+}
+
+.el-form-item.object .el-form-item {
+  width: 100%;
+  margin-bottom: 18px;
+}
+
+.el-form .ck.ck-editor {
+  width: 100%;
+}
+
+.router-link,
+.router-link-active {
+  color: var(--el-text-color-primary);
+}
+
+.router-tab {
+  box-sizing: border-box;
+  height: 40px;
+  background-color: var(--el-fill-color-blank);
+  border-width: 0 !important;
+}
+
+.router-tab .el-tabs__item {
+  border-bottom-width: 0;
+}
+
+.router-tab .el-tabs__content {
+  display: none;
+}
+
+/* .root {
+  height: 100%;
+} */
+
+.cursor-pointer {
+  cursor: pointer;
+}
+
+.between {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 100%;
+}
+
+.block-container {
+  width: 1200px;
+  height: 100%;
+  margin: auto;
+}
+
+.center {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+}
+
+.aside.collapse .logo {
+  min-width: 43px;
+}
+
+.logo img {
+  height: 32px;
+}

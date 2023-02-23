@@ -2,6 +2,7 @@
 bin/
 obj/
 logs/
+node_modules/
 
 .bak
 .suo

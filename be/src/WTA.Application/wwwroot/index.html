@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0"
+    />
+    <base href="/" />
+    <link
+      rel="icon"
+      type="image/svg+xml"
+      href="./public/logo.svg"
+    />
+    <link
+      rel="stylesheet"
+      href="./src/main.css"
+    />
+    <title>Vanilla ESM</title>
+  </head>
+  <body>
+    <div id="app"></div>
+    <script type="importmap">
+      {
+        "imports": {
+          "vue": "./libs/vue/vue.esm-browser.prod.js",
+          "@vue/devtools-api": "./libs/@vue/devtools-api/index.js",
+          "vue-router": "./libs/vue-router/vue-router.esm-browser.js",
+          "vue-demi": "./libs/vue-demi/index.js",
+          "pinia": "./libs/pinia/pinia.js",
+          "axios": "./libs/axios/axios.min.js",
+          "resize-detector": "./libs/resize-detector/index.js",
+          "echarts/core": "./libs/echarts/echarts.esm.min.js",
+          "vue-echarts": "./libs/vue-echarts/index.esm.min.js",
+          "better-mock": "./libs/better-mock/mock.browser.esm.js"
+        }
+      }
+    </script>
+    <script>
+      window.process = { env: { NODE_ENV: 'production' } };
+    </script>
+    <script
+      type="module"
+      src="./src/main.js"
+    ></script>
+  </body>
+</html>

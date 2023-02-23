@@ -16,7 +16,7 @@ public class SwaggerFilter : IDocumentFilter, IOperationFilter
 
     public SwaggerFilter(IStringLocalizer localizer)
     {
-        _localizer = localizer;
+        this._localizer = localizer;
     }
 
     public void Apply(OpenApiDocument swaggerDoc, DocumentFilterContext context)
@@ -39,7 +39,7 @@ public class SwaggerFilter : IDocumentFilter, IOperationFilter
 
     private void DisplayNameAsDescription(OpenApiDocument swaggerDoc)
     {
-        var assemblies = AppDomain.CurrentDomain.GetAssemblies().Where(o => o.FullName.StartsWith("WTA"));
+        var assemblies = AppDomain.CurrentDomain.GetAssemblies().Where(o => o.FullName!.StartsWith("WTA"));
         foreach (var item in swaggerDoc.Components.Schemas.Where(o => o.Key.StartsWith("WTA")))
         {
             var type = assemblies.SelectMany(o => o.GetTypes()).FirstOrDefault(o => o.FullName == item.Key);
@@ -60,7 +60,7 @@ public class SwaggerFilter : IDocumentFilter, IOperationFilter
                             var display = pi?.GetCustomAttribute<DisplayAttribute>();
                             if (display != null)
                             {
-                                propertyItem.Value.Description = _localizer.GetString(display.Name!);
+                                propertyItem.Value.Description = this._localizer.GetString(display.Name!);
                             }
                         }
                     }
@@ -73,17 +73,14 @@ public class SwaggerFilter : IDocumentFilter, IOperationFilter
     {
         // 非泛型控制器，通过在 Controller 上标记特性进行隐藏，如，使用 TagsAttribute
         // 泛型控制器，ControllerName 就是 Entity Name，Entity 作为资源，去数据库查找操作 Action 权限，找步到则添加 tag 标记隐藏
-        var descriptor = context.ApiDescription.ActionDescriptor as ControllerActionDescriptor;
-        if (descriptor != null)
+        if (context.ApiDescription.ActionDescriptor is ControllerActionDescriptor descriptor)
         {
             var controllerType = descriptor.ControllerTypeInfo.AsType();
             var tags = controllerType.GetCustomAttribute<TagsAttribute>()?.Tags;
             if (tags != null)
             {
-                var http = descriptor.MethodInfo.GetCustomAttributes()
-                    .FirstOrDefault(o => o.GetType().IsAssignableTo(typeof(HttpMethodAttribute)))
-                    as HttpMethodAttribute;
-                if (http != null && !tags.Any(o => o.Equals($"{http.HttpMethods.FirstOrDefault()}:{descriptor.ActionName}", StringComparison.OrdinalIgnoreCase)))
+                if (descriptor.MethodInfo.GetCustomAttributes().FirstOrDefault(o => o.GetType().IsAssignableTo(typeof(HttpMethodAttribute))) is HttpMethodAttribute http
+                    && !tags.Any(o => o.Equals($"{http.HttpMethods.FirstOrDefault()}:{descriptor.ActionName}", StringComparison.OrdinalIgnoreCase)))
                 {
                     operation.Tags.Add(new OpenApiTag() { Name = "remove" });
                 }

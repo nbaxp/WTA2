@@ -1,5 +1,14 @@
-﻿<html>
-  <body>
-    @RenderBody()
-  </body>
-</html>
+﻿@inject IStringLocalizer localizer
+@{
+    var action = Url.Action();
+}
+@section scripts{
+    <template id="page">
+        <h1>@ViewContext.HttpContext.Request.GetDisplayUrl()</h1>
+    </template>
+    <script type="module">
+        window.page = {
+            template: '#page'
+        };
+    </script>
+}
