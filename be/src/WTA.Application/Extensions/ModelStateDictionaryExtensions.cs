@@ -1,6 +1,6 @@
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 
-namespace WTA.Application.Abstractions.Json;
+namespace WTA.Application.Extensions;
 
 public static class ModelStateDictionaryExtensions
 {

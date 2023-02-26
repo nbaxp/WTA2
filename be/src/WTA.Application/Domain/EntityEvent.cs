@@ -1,5 +1,8 @@
+using System.ComponentModel.DataAnnotations;
+
 namespace WTA.Application.Domain;
 
+[Display(Name = "实体变动")]
 public class EntityEvent : BaseEntity
 {
     public DateTimeOffset Date { get; set; }

@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.Options;
+using WTA.Application;
 using WTA.Application.Resources;
 
 namespace WTA.Infrastructure.Options;
@@ -13,7 +14,7 @@ public class EmbeddedConfigureOptions : IPostConfigureOptions<StaticFileOptions>
         {
             new ManifestEmbeddedFileProvider(typeof(Resource).Assembly, "wwwroot")
         };
-        WebApp.ModuleAssemblies?
+        App.ModuleAssemblies?
             .ForEach(o =>
             {
                 try

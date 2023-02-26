@@ -5,7 +5,7 @@ namespace WTA.Application.BaseData.Data;
 
 public class BaseDataDbContext : IDbContext
 {
-    public void Initialize(DbContext dbContext)
+    public void Seed(DbContext dbContext)
     {
     }
 

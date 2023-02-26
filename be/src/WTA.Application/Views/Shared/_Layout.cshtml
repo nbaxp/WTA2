@@ -1,14 +1,76 @@
-﻿@inject IStringLocalizer localizer
+﻿@using Microsoft.AspNetCore.Builder;
+@inject IOptions<RequestLocalizationOptions> requestLocalizationOptions
+@inject IStringLocalizer localizer
 @{
-    var action = Url.Action();
+    var basePath = ViewContext.HttpContext.Request.PathBase.HasValue ? ViewContext.HttpContext.Request.PathBase.Value : "/";
+    var name = @localizer["Name"];
+    var defaultLocale = requestLocalizationOptions.Value.DefaultRequestCulture.Culture.Name;
+    var currentLocale = CultureInfo.CurrentCulture.Name;
+    var resources = localizer.GetAllStrings().ToDictionary(o => o.Name, o => o.Value);
+    var localeItems = requestLocalizationOptions.Value.SupportedCultures!.Select(o => new { o.Name, o.NativeName });
+    var isAuthenticated = User.Identity!.IsAuthenticated;
+    var userName = User.Identity.Name;
 }
-@section scripts{
-    <template id="page">
-        <h1>@ViewContext.HttpContext.Request.GetDisplayUrl()</h1>
-    </template>
-    <script type="module">
-        window.page = {
-            template: '#page'
-        };
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <base href="@basePath" />
+    <link rel="icon" type="image/svg+xml" href="./assets/logo.svg" />
+    <link rel="stylesheet" href="./src/main.css" />
+    <title>@name</title>
+</head>
+<body>
+    <div id="app"></div>
+    @RenderBody()
+    <script type="importmap">
+        {
+          "imports": {
+            "vue": "./libs/vue/vue.esm-browser.js",
+            "@@vue/devtools-api": "./libs/@@vue/devtools-api/index.js",
+            "vue-i18n": "./libs/vue-i18n/vue-i18n.esm-browser.prod.js",
+            "vue-router": "./libs/vue-router/vue-router.esm-browser.js",
+            "pinia": "./libs/pinia/pinia.js",
+            "@@vueuse/shared": "./libs/vueuse/shared/index.mjs",
+            "@@vueuse/core": "./libs/vueuse/core/index.mjs",
+            "axios": "./libs/axios/axios.min.js",
+            "echarts/core": "./libs/echarts/echarts.esm.min.js",
+            "vue-echarts": "./libs/vue-echarts/index.esm.min.js",
+            "element-plus": "./libs/element-plus/index.full.min.mjs",
+            "@@element-plus/icons-vue": "./libs/@@element-plus/icons-vue/index.min.js",
+            "better-mock": "./libs/better-mock/mock.browser.esm.js",
+            "vue-demi": "./libs/vue-demi/index.js",
+            "resize-detector": "./libs/resize-detector/index.js",
+            "html": "./src/utils/html.js",
+            "request": "./src/request/index.js"
+          }
+        }
     </script>
-}
+    <script>
+        window.process = { env: { NODE_ENV: 'production' } };
+    </script>
+    @RenderSection("scripts",false)
+    <script type="module">
+        import layout from './src/layouts/admin.js';
+        import init from './src/main.js';
+        const config = {
+            basePath: '@basePath',
+            locale: {
+                current: '@currentLocale',
+                default: '@defaultLocale',
+                items: @Json.Serialize(localeItems),
+                resources: @Json.Serialize(resources),
+            },
+            root: '#app',
+            layout: layout,
+            page: window.page,
+            user: {
+                isAuthenticated: @Json.Serialize(isAuthenticated),
+                name: '@userName'
+            }
+        };
+        init(config);
+    </script>
+</body>
+</html>

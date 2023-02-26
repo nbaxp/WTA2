@@ -62,27 +62,24 @@ public class WebApp
             Assembly.LoadFrom(item);
         }
 
-        ModuleAssemblies = AppDomain.CurrentDomain.GetAssemblies()
+        App.ModuleAssemblies = AppDomain.CurrentDomain.GetAssemblies()
             .Where(o => o.GetCustomAttributes<ModuleAttribute>().Any())
             .OrderBy(o => o.GetCustomAttribute<ModuleAttribute>()!.Order)
             .ToList();
 
-        StartupList = ModuleAssemblies
+        App.StartupList = App.ModuleAssemblies
                 .SelectMany(o => o.GetTypes())
                 .Where(o => typeof(IStartup).IsAssignableFrom(o))
                 .Select(o => (Activator.CreateInstance(o) as IStartup)!)
                 .ToList();
 
-        DbContextList = ModuleAssemblies
+        App.DbContextList = App.ModuleAssemblies
             .SelectMany(o => o.GetTypes())
             .Where(o => typeof(IDbContext).IsAssignableFrom(o))
             .Select(o => (Activator.CreateInstance(o) as IDbContext)!)
             .ToList();
     }
 
-    public static List<IDbContext>? DbContextList { get; private set; }
-    public static List<Assembly>? ModuleAssemblies { get; private set; }
-    public static List<IStartup>? StartupList { get; private set; }
     public string Name { get; }
 
     public virtual void Configure(WebApplication app)
@@ -149,12 +146,12 @@ public class WebApp
             }, writeToProviders: true);
             this.ConfigureServices(builder);
             configureBuilder?.Invoke(builder);
-            StartupList?.ForEach(o => o.ConfigureServices(builder));
+            App.StartupList?.ForEach(o => o.ConfigureServices(builder));
             var app = builder.Build();
             app.UseSerilogRequestLogging();
             this.Configure(app);
             configureApp?.Invoke(app);
-            StartupList?.ForEach(o => o.Configure(app));
+            App.StartupList?.ForEach(o => o.Configure(app));
             app.Run();
         }
         catch (Exception ex)
@@ -458,7 +455,8 @@ public class WebApp
         using var dbContext = scope.ServiceProvider.GetRequiredService<DbContext>();
         if (dbContext.Database.EnsureCreated())
         {
-            WebApp.DbContextList?.ForEach(o => o.Initialize(dbContext));
+            (dbContext as DefaultDbContext)?.Seed();
+            App.DbContextList?.ForEach(o => o.Seed(dbContext));
         }
     }
 

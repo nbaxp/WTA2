@@ -6,6 +6,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.ChangeTracking;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using WTA.Application;
 using WTA.Application.Abstractions.EventBus;
 using WTA.Application.Domain;
 using WTA.Application.Extensions;
@@ -17,22 +18,61 @@ namespace WTA.Infrastructure.Data;
 
 public class DefaultDbContext : DbContext
 {
+    public static readonly ILoggerFactory DefaultLoggerFactory = LoggerFactory.Create(builder => { builder.AddConsole(); });
+
+    private readonly IServiceScopeFactory _serviceScopeFactory;
+
     static DefaultDbContext()
     {
         LinqToDBForEFTools.Initialize();
     }
-
-    public static readonly ILoggerFactory DefaultLoggerFactory = LoggerFactory.Create(builder => { builder.AddConsole(); });
-    private readonly IServiceScopeFactory _serviceScopeFactory;
 
     public DefaultDbContext(DbContextOptions options, IServiceScopeFactory serviceScopeFactory) : base(options)
     {
         _serviceScopeFactory = serviceScopeFactory;
     }
 
+    public override int SaveChanges()
+    {
+        using var scope = _serviceScopeFactory.CreateScope();
+        var services = scope.ServiceProvider;
+        var entries = GetEntries();
+        BeforeSave(entries, services);
+        var result = base.SaveChanges();
+        AfterSave(entries, services);
+        return result;
+    }
+
+    public override async Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
+    {
+        using var scope = _serviceScopeFactory.CreateScope();
+        var services = scope.ServiceProvider;
+        var entries = GetEntries();
+        BeforeSave(entries, services);
+        var result = await base.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
+        AfterSave(entries, services);
+        return result;
+    }
+
+    public override async Task<int> SaveChangesAsync(bool acceptAllChangesOnSuccess, CancellationToken cancellationToken = default)
+    {
+        using var scope = _serviceScopeFactory.CreateScope();
+        var services = scope.ServiceProvider;
+        var entries = GetEntries();
+        BeforeSave(entries, services);
+        var result = await base.SaveChangesAsync(acceptAllChangesOnSuccess, cancellationToken).ConfigureAwait(false);
+        AfterSave(entries, services);
+        return result;
+    }
+
+    public void Seed()
+    {
+
+    }
+
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {
-        WebApp.DbContextList?.ForEach(o => o.OnConfiguring(optionsBuilder));
+        App.DbContextList?.ForEach(o => o.OnConfiguring(optionsBuilder));
         optionsBuilder.UseLoggerFactory(DefaultLoggerFactory);
         optionsBuilder.EnableSensitiveDataLogging();
         optionsBuilder.EnableDetailedErrors();
@@ -41,7 +81,7 @@ public class DefaultDbContext : DbContext
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         // 默认创建 DbContext 的 History 表
-        WebApp.DbContextList?.ForEach(o =>
+        App.DbContextList?.ForEach(o =>
         {
             o.OnModelCreating(modelBuilder);
             modelBuilder.ApplyConfigurationsFromAssembly(o.GetType().Assembly);
@@ -102,37 +142,29 @@ public class DefaultDbContext : DbContext
         }
     }
 
-    public override int SaveChanges()
+    private void AfterSave(List<EntityEntry> entries, IServiceProvider services)
     {
-        using var scope = _serviceScopeFactory.CreateScope();
-        var services = scope.ServiceProvider;
-        var entries = GetEntries();
-        BeforeSave(entries, services);
-        var result = base.SaveChanges();
-        AfterSave(entries, services);
-        return result;
-    }
-
-    public override async Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
-    {
-        using var scope = _serviceScopeFactory.CreateScope();
-        var services = scope.ServiceProvider;
-        var entries = GetEntries();
-        BeforeSave(entries, services);
-        var result = await base.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
-        AfterSave(entries, services);
-        return result;
-    }
-
-    public override async Task<int> SaveChangesAsync(bool acceptAllChangesOnSuccess, CancellationToken cancellationToken = default)
-    {
-        using var scope = _serviceScopeFactory.CreateScope();
-        var services = scope.ServiceProvider;
-        var entries = GetEntries();
-        BeforeSave(entries, services);
-        var result = await base.SaveChangesAsync(acceptAllChangesOnSuccess, cancellationToken).ConfigureAwait(false);
-        AfterSave(entries, services);
-        return result;
+        foreach (var entry in entries)
+        {
+            if (entry.Entity.GetType() != typeof(EntityEvent))
+            {
+                var events = new List<object>();
+                if (entry.State == EntityState.Added)
+                {
+                    events.Add(Activator.CreateInstance(typeof(EntityCreatedEvent<>).MakeGenericType(entry.Entity.GetType()), entry.Entity)!);
+                }
+                else if (entry.State == EntityState.Modified)
+                {
+                    events.Add(Activator.CreateInstance(typeof(EntityUpdatedEvent<>).MakeGenericType(entry.Entity.GetType()), entry.Entity, entry.OriginalValues.ToObject())!);
+                }
+                else if (entry.State == EntityState.Deleted)
+                {
+                    events.Add(Activator.CreateInstance(typeof(EntityDeletedEvent<>).MakeGenericType(entry.Entity.GetType()), entry.Entity)!);
+                }
+                var publisher = services.GetRequiredService<IEventPublisher>();
+                events.ForEach(o => publisher.Publish(o));
+            }
+        }
     }
 
     private void BeforeSave(List<EntityEntry> entries, IServiceProvider services)
@@ -175,31 +207,6 @@ public class DefaultDbContext : DbContext
                         });
                     }
                 }
-            }
-        }
-    }
-
-    private void AfterSave(List<EntityEntry> entries, IServiceProvider services)
-    {
-        foreach (var entry in entries)
-        {
-            if (entry.Entity.GetType() != typeof(EntityEvent))
-            {
-                var events = new List<object>();
-                if (entry.State == EntityState.Added)
-                {
-                    events.Add(Activator.CreateInstance(typeof(EntityCreatedEvent<>).MakeGenericType(entry.Entity.GetType()), entry.Entity)!);
-                }
-                else if (entry.State == EntityState.Modified)
-                {
-                    events.Add(Activator.CreateInstance(typeof(EntityUpdatedEvent<>).MakeGenericType(entry.Entity.GetType()), entry.Entity, entry.OriginalValues.ToObject())!);
-                }
-                else if (entry.State == EntityState.Deleted)
-                {
-                    events.Add(Activator.CreateInstance(typeof(EntityDeletedEvent<>).MakeGenericType(entry.Entity.GetType()), entry.Entity)!);
-                }
-                var publisher = services.GetRequiredService<IEventPublisher>();
-                events.ForEach(o => publisher.Publish(o));
             }
         }
     }
