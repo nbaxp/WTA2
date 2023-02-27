@@ -1,5 +1,5 @@
 using Microsoft.AspNetCore.Http;
-using WTA.Core.Abstractions;
+using WTA.Application.Abstractions;
 
 namespace WTA.Infrastructure.Tenants;
 

@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc;
+using WTA.Application.Extensions;
 
 namespace WTA.Infrastructure.Extensions;
 

@@ -7,12 +7,11 @@ using Microsoft.EntityFrameworkCore.ChangeTracking;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using WTA.Application;
+using WTA.Application.Abstractions;
 using WTA.Application.Abstractions.EventBus;
+using WTA.Application.Application;
 using WTA.Application.Domain;
 using WTA.Application.Extensions;
-using WTA.Core.Abstractions;
-using WTA.Core.Application;
-using WTA.Core.Extensions;
 
 namespace WTA.Infrastructure.Data;
 
@@ -67,7 +66,6 @@ public class DefaultDbContext : DbContext
 
     public void Seed()
     {
-
     }
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
@@ -126,7 +124,7 @@ public class DefaultDbContext : DbContext
                     .OnDelete(DeleteBehavior.SetNull);
                 modelBuilder.Entity(item.ClrType).Property(nameof(BaseTreeEntity<BaseEntity>.Name)).IsRequired();
                 modelBuilder.Entity(item.ClrType).Property(nameof(BaseTreeEntity<BaseEntity>.Number)).IsRequired();
-                // builder.Entity(item.ClrType).Property(nameof(TreeEntity<BaseEntity>.Path)).IsRequired();
+                modelBuilder.Entity(item.ClrType).Property(nameof(BaseTreeEntity<BaseEntity>.Path)).IsRequired();
             }
             // 配置多租户
             using var scope = _serviceScopeFactory.CreateScope();

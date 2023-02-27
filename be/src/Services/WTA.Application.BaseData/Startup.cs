@@ -1,6 +1,6 @@
 using Microsoft.AspNetCore.Builder;
 using WTA.Application.Abstractions;
-using WTA.Core.Application;
+using WTA.Application.Application;
 
 [assembly: Module($"{nameof(WTA.Application.BaseData)}")]
 

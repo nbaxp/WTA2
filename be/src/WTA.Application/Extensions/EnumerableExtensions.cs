@@ -1,4 +1,4 @@
-namespace WTA.Core.Extensions;
+namespace WTA.Application.Extensions;
 
 public static class EnumerableExtensions
 {
@@ -15,6 +15,6 @@ public static class EnumerableExtensions
     /// </summary>
     public static IQueryable<T> WhereIf<T>(this IQueryable<T> source, bool condition, Func<T, bool> predicate)
     {
-        return condition ? source.Where(predicate) : source;
+        return condition ? source.Where(predicate).AsQueryable() : source;
     }
 }

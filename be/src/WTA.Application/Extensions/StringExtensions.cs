@@ -1,6 +1,6 @@
 using System.Text.RegularExpressions;
 
-namespace WTA.Core.Extensions;
+namespace WTA.Application.Extensions;
 
 public static class StringExtensions
 {
@@ -15,7 +15,7 @@ public static class StringExtensions
         return new string(chars);
     }
 
-    public static string ToUnderline(string input)
+    public static string ToUnderline(this string input)
     {
         return Regex.Replace(input.ToString()!, "([a-z])([A-Z])", "$1_$2").ToLowerInvariant();
     }

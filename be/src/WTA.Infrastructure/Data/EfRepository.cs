@@ -1,5 +1,5 @@
 using Microsoft.EntityFrameworkCore;
-using WTA.Core.Abstractions;
+using WTA.Application.Abstractions;
 using WTA.Application.Domain;
 
 namespace WTA.Infrastructure.Data;
@@ -45,7 +45,7 @@ public class EfRepository<T> : IRepository<T> where T : BaseEntity
 
     public IQueryable<T> AsNoTracking()
     {
-        return _efDbContext.Set<T>().AsNoTracking();
+        return _efDbContext.Set<T>().AsNoTrackingWithIdentityResolution();
     }
 
     public Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)

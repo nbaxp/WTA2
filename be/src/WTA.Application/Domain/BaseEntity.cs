@@ -1,10 +1,10 @@
 using System.ComponentModel.DataAnnotations;
 using Microsoft.Extensions.DependencyInjection;
-using WTA.Core.Abstractions;
+using WTA.Application.Abstractions;
 
 namespace WTA.Application.Domain;
 
-public abstract class BaseEntity
+public abstract class BaseEntity : IResource
 {
     public BaseEntity()
     {

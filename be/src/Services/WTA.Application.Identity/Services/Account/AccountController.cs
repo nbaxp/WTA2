@@ -10,7 +10,6 @@ using WTA.Application.Abstractions.Token;
 using WTA.Application.Extensions;
 using WTA.Application.Identity.Controllers;
 using WTA.Application.Identity.Domain;
-using WTA.Core.Abstractions;
 
 namespace WTA.Application.Identity.Services.Account;
 
@@ -68,7 +67,7 @@ public class AccountController : BaseController
                     }
                     else
                     {
-                        var key = UnderlineJsonNamingPolicy.ToUnderline(nameof(OAuth2TokenResult.AccessToken));
+                        var key = nameof(OAuth2TokenResult.AccessToken).ToUnderline();
                         var accessTokenForCookie = this._tokenService.CreatAccessTokenForCookie(model.UserName, model.RememberMe, out var timeout);
                         var cookieOptions = new CookieOptions
                         {
@@ -168,7 +167,7 @@ public class AccountController : BaseController
     [HttpPost]
     public IActionResult Logout()
     {
-        var key = UnderlineJsonNamingPolicy.ToUnderline(nameof(OAuth2TokenResult.AccessToken));
+        var key = nameof(OAuth2TokenResult.AccessToken).ToUnderline();
         Response.Cookies.Delete(key);
         return Ok(true);
     }

@@ -6,7 +6,6 @@ using WTA.Application.Abstractions;
 using WTA.Application.Domain;
 using WTA.Application.Extensions;
 using WTA.Application.Identity.Domain;
-using WTA.Core.Abstractions;
 
 namespace WTA.Application.Identity.Data;
 

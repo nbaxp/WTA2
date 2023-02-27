@@ -1,4 +1,4 @@
-namespace WTA.Core.Abstractions;
+namespace WTA.Application.Abstractions;
 
 public interface IExportImportService<T> where T : class
 {

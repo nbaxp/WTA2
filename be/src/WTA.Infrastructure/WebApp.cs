@@ -6,6 +6,8 @@ using System.Text.Encodings.Web;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Text.Unicode;
+using Mapster;
+using MapsterMapper;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http.Extensions;
@@ -31,15 +33,13 @@ using Swashbuckle.AspNetCore.SwaggerGen;
 using WTA.Application;
 using WTA.Application.Abstractions;
 using WTA.Application.Abstractions.Controllers;
+using WTA.Application.Application;
+using WTA.Application.Extensions;
 using WTA.Application.Resources;
-using WTA.Core.Abstractions;
-using WTA.Core.Application;
-using WTA.Core.Extensions;
 using WTA.Infrastructure.Authentication;
 using WTA.Infrastructure.Data;
 using WTA.Infrastructure.DataAnnotations;
 using WTA.Infrastructure.ExportImport;
-using WTA.Infrastructure.Extensions;
 using WTA.Infrastructure.Localization;
 using WTA.Infrastructure.Options;
 using WTA.Infrastructure.Routing;
@@ -108,6 +108,8 @@ public class WebApp
         AddDefaultOptions(builder);
         builder.Services.ConfigureOptions(new EmbeddedConfigureOptions());
         builder.Services.AddTransient(typeof(IExportImportService<>), typeof(DefaultExportImportService<>));
+        builder.Services.AddSingleton(new TypeAdapterConfig());
+        builder.Services.AddScoped<IMapper, ServiceMapper>();
         //builder.Services.AddEventBus();
         //builder.Services.AddTransient(typeof(IApplicationService<>), typeof(ApplicationService<>));
     }
@@ -418,7 +420,14 @@ public class WebApp
         {
             options.DocumentFilter<SwaggerFilter>();
             options.OperationFilter<SwaggerFilter>();
-            options.DocInclusionPredicate((docName, api) => api.GroupName == null || api.GroupName == docName);
+            options.DocInclusionPredicate((docName, api) =>
+            {
+                if (docName == "Default" && api.GroupName == null)
+                {
+                    return true;
+                }
+                return api.GroupName == docName;
+            });
             options.AddSecurityDefinition("bearerAuth", new OpenApiSecurityScheme
             {
                 Type = SecuritySchemeType.Http,

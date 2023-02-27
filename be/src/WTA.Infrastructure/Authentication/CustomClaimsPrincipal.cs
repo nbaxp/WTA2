@@ -1,6 +1,6 @@
 using System.Security.Claims;
 using Microsoft.Extensions.DependencyInjection;
-using WTA.Core.Abstractions;
+using WTA.Application.Abstractions;
 
 namespace WTA.Infrastructure.Authentication;
 

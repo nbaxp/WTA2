@@ -1,6 +1,4 @@
-using System.Reflection;
 using Microsoft.AspNetCore.Mvc.ApplicationModels;
-using WTA.Application.Domain;
 
 namespace WTA.Application.Abstractions.Controllers;
 
@@ -19,7 +17,8 @@ public class GenericControllerNameConventionAttribute : Attribute, IControllerMo
                 {
                     controller.ControllerName = entityType.Name;
                 }
-                var groupName = entityType.GetCustomAttribute<GroupAttribute>()?.Area;
+                var moduleName = entityType.Assembly.GetName().Name;
+                var groupName = moduleName?.Substring(moduleName.LastIndexOf('.') + 1);
                 if (!string.IsNullOrEmpty(groupName))
                 {
                     controller.ApiExplorer.GroupName = groupName;

@@ -1,4 +1,4 @@
-﻿namespace WTA.Core.Application;
+namespace WTA.Application.Application;
 
 public enum OperatorType
 {

@@ -1,6 +1,6 @@
 using System.Security.Cryptography;
 using System.Text;
-using WTA.Core.Abstractions;
+using WTA.Application.Abstractions;
 
 namespace WTA.Infrastructure.Identity;
 

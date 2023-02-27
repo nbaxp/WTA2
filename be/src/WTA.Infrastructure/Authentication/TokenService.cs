@@ -4,7 +4,7 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using WTA.Application.Abstractions.Token;
-using WTA.Core.Abstractions;
+using WTA.Application.Abstractions;
 
 namespace WTA.Infrastructure.Authentication;
 

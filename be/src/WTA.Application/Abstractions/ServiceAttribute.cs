@@ -1,6 +1,6 @@
 using Microsoft.Extensions.DependencyInjection;
 
-namespace WTA.Core.Abstractions;
+namespace WTA.Application.Abstractions;
 
 [AttributeUsage(AttributeTargets.Class)]
 public class ServiceAttribute<T> : Attribute, IServiceAttribute

@@ -1,6 +1,6 @@
 using Microsoft.Extensions.DependencyInjection;
 using WTA.Application.Abstractions.EventBus;
-using WTA.Core.Abstractions;
+using WTA.Application.Abstractions;
 
 namespace WTA.Infrastructure.EventBus;
 

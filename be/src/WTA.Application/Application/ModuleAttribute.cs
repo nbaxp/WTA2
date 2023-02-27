@@ -1,4 +1,4 @@
-namespace WTA.Core.Application;
+namespace WTA.Application.Application;
 
 [AttributeUsage(AttributeTargets.Assembly, Inherited = false)]
 public class ModuleAttribute : Attribute

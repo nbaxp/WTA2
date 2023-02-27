@@ -1,9 +1,8 @@
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using WTA.Application.Domain;
 using WTA.Application.Extensions;
-using WTA.Core.Abstractions;
-using WTA.Core.Extensions;
 
 namespace WTA.Application.Abstractions.Controllers;
 
@@ -38,20 +37,23 @@ public class GenericController<TEntity, TModel, TListModel, TSearchModel> : Cont
             if (ModelState.IsValid)
             {
                 var query = _repository.AsNoTracking();
-                if (!string.IsNullOrWhiteSpace(model.Query))
+                var isTree = typeof(TEntity).IsAssignableTo(typeof(BaseTreeEntity<TEntity>));
+                if (isTree)
                 {
-                    query = query.Where(model.Query);
+                    query = query.Where($"{nameof(BaseTreeEntity<TEntity>.ParentId)}==null");
                 }
-                model.TotalCount = await query.CountAsync().ConfigureAwait(false);
-                if (!string.IsNullOrWhiteSpace(model.OrderBy))
+                if (!string.IsNullOrEmpty(model.OrderBy))
                 {
                     query = query.OrderBy(model.OrderBy);
                 }
-                model.Items = (await query.Skip(model.PageSize * (model.PageIndex - 1))
+                else
+                {
+                    query = isTree ? query.OrderBy("Number") : query.OrderBy("Id");
+                }
+                model.TotalCount = await query.CountAsync().ConfigureAwait(false);
+                model.Items = query.Skip(model.PageSize * (model.PageIndex - 1))
                     .Take(model.PageSize)
-                    .ToListAsync()
-                    .ConfigureAwait(false))
-                    .To<List<TListModel>>();
+                    .ToList<TEntity,TListModel>();
                 return Json(new
                 {
                     model,

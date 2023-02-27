@@ -1,6 +1,6 @@
 ﻿using System.Reflection;
 
-namespace WTA.Core.Extensions;
+namespace WTA.Application.Extensions;
 
 public static class EnumExtensions
 {

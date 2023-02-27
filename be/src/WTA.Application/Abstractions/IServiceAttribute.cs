@@ -1,6 +1,6 @@
 using Microsoft.Extensions.DependencyInjection;
 
-namespace WTA.Core.Abstractions;
+namespace WTA.Application.Abstractions;
 
 public interface IServiceAttribute
 {

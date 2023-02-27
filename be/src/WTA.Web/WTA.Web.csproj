@@ -7,10 +7,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.DependencyValidation.Analyzers" Version="0.11.0" />
-  </ItemGroup>
-
-  <ItemGroup>
     <ProjectReference Include="..\Services\WTA.Application.BaseData\WTA.Application.BaseData.csproj" />
     <ProjectReference Include="..\Services\WTA.Application.Identity\WTA.Application.Identity.csproj" />
     <ProjectReference Include="..\Services\WTA.Application.Wms\WTA.Application.Wms.csproj" />

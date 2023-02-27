@@ -1,6 +1,8 @@
+using System.Diagnostics;
 using System.Reflection;
 using Microsoft.AspNetCore.Mvc.ApplicationParts;
 using Microsoft.AspNetCore.Mvc.Controllers;
+using WTA.Application.Application;
 using WTA.Application.Domain;
 
 namespace WTA.Application.Abstractions.Controllers;
@@ -9,24 +11,32 @@ public class GenericControllerFeatureProvider : IApplicationFeatureProvider<Cont
 {
     public void PopulateFeature(IEnumerable<ApplicationPart> parts, ControllerFeature feature)
     {
-        var typeInfos = Assembly
-          .GetAssembly(typeof(BaseEntity))!.GetTypes()
-          //.Where(o => !o.IsAbstract && o.IsAssignableTo(typeof(BaseEntity)))//根据实体类型
-          .Where(o => o.CustomAttributes.Any(o => o.AttributeType.IsAssignableTo(typeof(GroupAttribute))))//根据注解获取
-          .Select(o => o.GetTypeInfo())
-          .ToList();
+        var stopWatch = new Stopwatch();
+        stopWatch.Start();
+        var typeInfos = App.ModuleAssemblies!
+            .SelectMany(o => o.GetTypes())
+            .Where(o => !o.IsAbstract && o.IsAssignableTo(typeof(IResource)))
+            .Select(o => o.GetTypeInfo())
+            .ToList();
         foreach (var entityTypeInfo in typeInfos)
         {
             var entityType = entityTypeInfo.AsType();
+            var prefix = entityType.Assembly.GetName().Name + ".";
             var typeName = entityType.Name + "Controller";
-            if (!feature.Controllers.Any(o => o.Name == typeName &&
-                o.BaseType != null &&
-                o.BaseType.IsGenericType &&
-                o.BaseType.GetGenericTypeDefinition() == typeof(GenericController<,,,>)))
+            if (!feature.Controllers.Any(o => o.FullName!.StartsWith(prefix) && o.Name == typeName))
             {
-                var searchModelType = typeof(PaginationModel<>).MakeGenericType(entityType);
-                feature.Controllers.Add(typeof(GenericController<,,,>).MakeGenericType(entityType, entityType, entityType, searchModelType).GetTypeInfo());
+                var modelType = entityType.Assembly.GetTypes()
+                    .FirstOrDefault(o => o.GetCustomAttributes().Any(a => a.GetType() == typeof(ModelAttribute<>).MakeGenericType(entityType))) ?? entityType;
+                var listModelType = entityType.Assembly.GetTypes()
+                    .FirstOrDefault(o => o.GetCustomAttributes().Any(a => a.GetType() == typeof(ListModelAttribute<>).MakeGenericType(entityType))) ?? entityType;
+                var searchModelType = entityType.Assembly.GetTypes()
+                    .FirstOrDefault(o => o.GetCustomAttributes().Any(a => a.GetType() == typeof(SearchModelAttribute<>).MakeGenericType(entityType))) ??
+                    typeof(PaginationModel<>).MakeGenericType(listModelType);
+                var typeInfo = typeof(GenericController<,,,>).MakeGenericType(entityType, modelType, listModelType, searchModelType).GetTypeInfo();
+                feature.Controllers.Add(typeInfo);
             }
         }
+        stopWatch.Stop();
+        Console.WriteLine("init controllers total seconds:" + stopWatch.ElapsedMilliseconds / 1000.0);
     }
 }

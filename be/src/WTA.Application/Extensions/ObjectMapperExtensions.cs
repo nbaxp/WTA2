@@ -1,8 +1,7 @@
 using Microsoft.Extensions.DependencyInjection;
-using WTA.Application;
-using WTA.Core.Abstractions;
+using WTA.Application.Abstractions;
 
-namespace WTA.Core.Extensions;
+namespace WTA.Application.Extensions;
 
 public static class ObjectMapperExtensions
 {

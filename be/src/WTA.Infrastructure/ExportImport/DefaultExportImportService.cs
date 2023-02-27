@@ -1,4 +1,4 @@
-using WTA.Core.Abstractions;
+using WTA.Application.Abstractions;
 
 namespace WTA.Infrastructure.ExportImport;
 

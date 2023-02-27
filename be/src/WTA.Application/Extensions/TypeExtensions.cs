@@ -8,7 +8,7 @@ using Microsoft.AspNetCore.Mvc.ModelBinding.Metadata;
 using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Localization;
-using WTA.Core.Extensions;
+using WTA.Application.Extensions;
 
 namespace WTA.Application.Extensions;
 

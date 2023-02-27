@@ -1,8 +1,7 @@
 using Microsoft.Extensions.DependencyInjection;
-using WTA.Application;
-using WTA.Core.Abstractions;
+using WTA.Application.Abstractions;
 
-namespace WTA.Core.Extensions;
+namespace WTA.Application.Extensions;
 
 public static class QueryableExtensions
 {
@@ -20,10 +19,17 @@ public static class QueryableExtensions
         return service.OrderBy(source, ordering, args);
     }
 
-    public static IQueryable<TEntity> Where<TEntity, TModel>(this IQueryable<TEntity> source, TModel model)
+    public static IQueryable<TEntity> WhereByModel<TEntity, TModel>(this IQueryable<TEntity> source, TModel model) where TModel : class
     {
         using var scope = App.Services!.CreateScope();
         var service = scope.ServiceProvider.GetRequiredService<ILinqDynamic>();
         return service.Where(source, model);
+    }
+
+    public static List<TModel> ToList<TEntity, TModel>(this IQueryable<TEntity> source) where TModel : class
+    {
+        using var scope = App.Services!.CreateScope();
+        var service = scope.ServiceProvider.GetRequiredService<ILinqDynamic>();
+        return service.ToList<TEntity, TModel>(source);
     }
 }
