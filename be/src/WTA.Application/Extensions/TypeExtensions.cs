@@ -8,7 +8,6 @@ using Microsoft.AspNetCore.Mvc.ModelBinding.Metadata;
 using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Localization;
-using WTA.Application.Extensions;
 
 namespace WTA.Application.Extensions;
 
@@ -16,7 +15,10 @@ public static class TypeExtensions
 {
     public static string GetDisplayName(this Type type)
     {
-        return type.GetCustomAttribute<DisplayAttribute>()?.Name ?? type.Name;
+        var scope = App.Services.CreateScope();
+        var localizer = scope.ServiceProvider.GetService<IStringLocalizer>();
+        var key = type.GetCustomAttribute<DisplayAttribute>()?.Name ?? type.Name;
+        return localizer.GetString(key);
     }
 
     public static object? GetMetadataForType(this Type modelType, IServiceProvider serviceProvider, bool showForList = false)
@@ -29,17 +31,17 @@ public static class TypeExtensions
     public static object? GetSchema(this ModelMetadata meta, IServiceProvider serviceProvider, bool showForList = false)
     {
         var modelType = meta.UnderlyingOrModelType;
-
+        var title = meta.ContainerType == null ? modelType.GetDisplayName() : meta.GetDisplayName();
         var schema = new Dictionary<string, object>
-    {
-      { "title", meta.GetDisplayName() },
-      { "description", meta.Description! },
-      { "format", meta.DataTypeName?.ToLowerCamelCase()! },
-      { "template", meta.TemplateHint?.ToLowerCamelCase()! },
-      { nameof(meta.ShowForDisplay), meta.ShowForDisplay },
-      { nameof(meta.ShowForEdit), meta.ShowForEdit },
-      { nameof(meta.IsReadOnly), meta.IsReadOnly }
-    };
+        {
+          { "title",title },
+          { "description", meta.Description! },
+          { "format", meta.DataTypeName?.ToLowerCamelCase()! },
+          { "template", meta.TemplateHint?.ToLowerCamelCase()! },
+          { nameof(meta.ShowForDisplay), meta.ShowForDisplay },
+          { nameof(meta.ShowForEdit), meta.ShowForEdit },
+          { nameof(meta.IsReadOnly), meta.IsReadOnly }
+        };
         ModelPropertyCollection? metaProperties = null;
         if (meta.IsEnumerableType)
         {
@@ -74,10 +76,13 @@ public static class TypeExtensions
                         continue;
                     }
                 }
-                var propertyProperties = propertyMetadata.GetSchema(serviceProvider);
-                if (propertyProperties != null)
+                if (!propertyMetadata.UnderlyingOrModelType.IsValueType && propertyMetadata.UnderlyingOrModelType != typeof(string))
                 {
-                    properties.Add(propertyMetadata.Name!, propertyProperties);
+                    var propertyProperties = propertyMetadata.GetSchema(serviceProvider);
+                    if (propertyProperties != null && !properties.ContainsKey(propertyMetadata.Name!))
+                    {
+                        properties.Add(propertyMetadata.Name!, propertyProperties);
+                    }
                 }
             }
             schema.Add(nameof(properties), properties);

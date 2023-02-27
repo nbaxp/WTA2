@@ -4,7 +4,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace WTA.Application.Identity.Services.Account;
 
-[Display]
+[Description("desc test")]
 public class LoginModel
 {
     [Required]

@@ -4,7 +4,7 @@ using WTA.Application.Identity.Domain;
 
 namespace WTA.Application.Identity.Services.Users;
 
-[Model<User>, ListModel<User>]
+[Model<User>, ListModel<User>, SearchModel<User>]
 public class UserModel : PaginationModel<UserModel>
 {
     [OperatorType(OperatorType.Contains)]
