@@ -53,11 +53,11 @@ public class GenericController<TEntity, TModel, TListModel, TSearchModel> : Cont
                 model.TotalCount = await query.CountAsync().ConfigureAwait(false);
                 model.Items = query.Skip(model.PageSize * (model.PageIndex - 1))
                     .Take(model.PageSize)
-                    .ToList<TEntity,TListModel>();
+                    .ToList<TEntity, TListModel>();
                 return this.Result(new
                 {
                     model,
-                    schema = model.GetType().GetMetadataForType(HttpContext.RequestServices, true)
+                    schema = model.GetType().GetMetadataForType(HttpContext.RequestServices)
                 });
             }
             return BadRequest();

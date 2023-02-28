@@ -21,14 +21,14 @@ public static class TypeExtensions
         return localizer.GetString(key);
     }
 
-    public static object? GetMetadataForType(this Type modelType, IServiceProvider serviceProvider, bool showForList = false)
+    public static object? GetMetadataForType(this Type modelType, IServiceProvider serviceProvider)
     {
         using var scope = serviceProvider.CreateScope();
         var meta = scope.ServiceProvider.GetRequiredService<IModelMetadataProvider>().GetMetadataForType(modelType);
-        return meta.GetSchema(serviceProvider, showForList);
+        return meta.GetSchema(serviceProvider);
     }
 
-    public static object? GetSchema(this ModelMetadata meta, IServiceProvider serviceProvider, bool showForList = false)
+    public static object? GetSchema(this ModelMetadata meta, IServiceProvider serviceProvider)
     {
         var modelType = meta.UnderlyingOrModelType;
         var title = meta.ContainerType == null ? modelType.GetDisplayName() : meta.GetDisplayName();
@@ -65,23 +65,34 @@ public static class TypeExtensions
             var properties = new Dictionary<string, object>();
             foreach (var propertyMetadata in metaProperties)
             {
-                if (propertyMetadata.IsEnumerableType)
-                {
-                    if (!showForList)
-                    {
-                        continue;
-                    }
-                    else if (meta.MetadataKind == ModelMetadataKind.Property)
-                    {
-                        continue;
-                    }
-                }
-                if (!propertyMetadata.UnderlyingOrModelType.IsValueType && propertyMetadata.UnderlyingOrModelType != typeof(string))
+                if (propertyMetadata.UnderlyingOrModelType.IsValueType || propertyMetadata.UnderlyingOrModelType == typeof(string))
                 {
                     var propertyProperties = propertyMetadata.GetSchema(serviceProvider);
                     if (propertyProperties != null && !properties.ContainsKey(propertyMetadata.Name!))
                     {
                         properties.Add(propertyMetadata.Name!, propertyProperties);
+                    }
+                }
+                else if (propertyMetadata.IsEnumerableType)
+                {
+                    if (propertyMetadata.ElementMetadata?.UnderlyingOrModelType != meta.UnderlyingOrModelType)
+                    {
+                        properties.Add("items", propertyMetadata.ElementMetadata?.ModelType.GetMetadataForType(serviceProvider)!);
+                    }
+                    //if (meta.MetadataKind == ModelMetadataKind.Property)
+                    //{
+                    //    continue;
+                    //}
+                    //if (propertyMetadata.ElementMetadata?.UnderlyingOrModelType == meta.UnderlyingOrModelType)
+                    //{
+                    //    continue;
+                    //}
+                }
+                else
+                {
+                    if (propertyMetadata.UnderlyingOrModelType == meta.UnderlyingOrModelType)
+                    {
+                        //continue;
                     }
                 }
             }

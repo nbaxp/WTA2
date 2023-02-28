@@ -11,7 +11,7 @@ public static class ControllerExtensions
             return controller.Json(new
             {
                 model,
-                schema = model?.GetType().GetMetadataForType(controller.HttpContext.RequestServices, true)
+                schema = model?.GetType().GetMetadataForType(controller.HttpContext.RequestServices)
             });
         }
         return viewName == null ? controller.View(model) : controller.View(viewName, model);
