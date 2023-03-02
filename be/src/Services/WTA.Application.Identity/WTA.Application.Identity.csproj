@@ -28,9 +28,5 @@
   <ItemGroup>
     <ProjectReference Include="..\..\WTA.Application\WTA.Application.csproj" />
   </ItemGroup>
-  
-  <ItemGroup>
-    <Folder Include="Views\Account\" />
-  </ItemGroup>
 
 </Project>

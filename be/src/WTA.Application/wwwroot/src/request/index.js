@@ -1,5 +1,4 @@
 import axios from 'axios';
-import { useAppStore } from '../store/index.js';
 import { ElMessage } from 'element-plus';
 
 const getErrorMessageByCode = (code) => {
@@ -37,8 +36,7 @@ request.interceptors.request.use(
     if (config.data) {
       log.debug(JSON.parse(JSON.stringify(config.data)));
     }
-    const appStore = useAppStore();
-    const { token } = userStore.user;
+    const token = localStorage.getItem('token');
     if (token) {
       if (!Object.prototype.hasOwnProperty.call(config, 'headers')) {
         Object.assign(config, { headers: {} });

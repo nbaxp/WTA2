@@ -1,6 +1,7 @@
 ﻿@using Microsoft.AspNetCore.Builder;
 @inject IOptions<RequestLocalizationOptions> requestLocalizationOptions
 @inject IStringLocalizer localizer
+@inject WTA.Application.Abstractions.IMenuService menuService
 @{
     var basePath = ViewContext.HttpContext.Request.PathBase.HasValue ? ViewContext.HttpContext.Request.PathBase.Value : "/";
     var name = @localizer["Name"];
@@ -10,6 +11,7 @@
     var localeItems = requestLocalizationOptions.Value.SupportedCultures!.Select(o => new { o.Name, o.NativeName });
     var isAuthenticated = User.Identity!.IsAuthenticated;
     var userName = User.Identity.Name;
+    var menus = menuService.GetMenus();
 }
 <!DOCTYPE html>
 <html lang="en">
@@ -68,7 +70,8 @@
             user: {
                 isAuthenticated: @Json.Serialize(isAuthenticated),
                 name: '@userName'
-            }
+            },
+            menus: @Json.Serialize(menus)
         };
         init(config);
     </script>

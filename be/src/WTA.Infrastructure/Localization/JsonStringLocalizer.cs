@@ -1,7 +1,9 @@
 using System.Globalization;
+using System.Reflection;
 using System.Text.Json;
 using Microsoft.Extensions.Localization;
 using WTA.Application;
+using WTA.Application.Resources;
 
 namespace WTA.Infrastructure.Localization;
 
@@ -15,6 +17,8 @@ public class JsonStringLocalizer : IStringLocalizer
         {
             var result = new Dictionary<string, string>();
             App.ModuleAssemblies?
+               .Concat(new Assembly[] { typeof(Resource).Assembly })
+               .ToList()
                .ForEach(assembly =>
                {
                    var filePath = $"{assembly.GetName().Name}.Resources.{Thread.CurrentThread.CurrentCulture.Name}.json";

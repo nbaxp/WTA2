@@ -6,5 +6,7 @@
   "Delete": "删除",
   "UserName": "用户名",
   "Password": "密码",
-  "LoginModel": "登录"
+  "LoginModel": "登录",
+  "Login": "登录",
+  "register": "注册"
 }

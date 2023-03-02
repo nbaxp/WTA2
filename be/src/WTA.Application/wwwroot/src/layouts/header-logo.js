@@ -13,7 +13,7 @@ export default {
         v-if="!appStore.menuCollapse"
         class="p-0 m-0 text-lg"
       >
-        {{ $t('name') }}
+        {{ $t('siteName') }}
       </h1>
     </el-space>
   </a>`,

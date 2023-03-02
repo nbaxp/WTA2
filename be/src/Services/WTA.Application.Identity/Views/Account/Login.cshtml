@@ -1,0 +1,63 @@
+﻿@using WTA.Application.Extensions
+@{
+    var action = Url.Action();
+}
+@section scripts{
+    <template id="page">
+        <h1>Default:{{appStore.basePath}}:{{$t('name')}}-{{schema.title}}</h1>
+        <app-form ref="formRef" v-model="model" mode="create"></app-form>
+    </template>
+    <script type="module">
+        import { ref, reactive } from 'vue';
+        import { ElMessage } from 'element-plus';
+        import request from 'request';
+        import appForm from './src/components/form/app-form.js';
+        import { useAppStore } from './src/store/index.js';
+        import defaultLayout from './src/layouts/default.js';
+
+        window.page = {
+            layout: defaultLayout,
+            components: { appForm },
+            template: '#page',
+            setup() {
+                const appStore = useAppStore();
+                const url = ref('@action');
+                var model = reactive(@Json.Serialize(Model));
+                var errors = reactive(@Json.Serialize(ViewData.ModelState.ToErrors()));
+                var schema = reactive(@Json.Serialize(ViewData.ModelMetadata.GetSchema(ViewContext.HttpContext.RequestServices)));
+
+                const submit = async () => {
+                    //var options = {
+                    //    method: 'post',
+                    //    credentials: 'include',
+                    //    headers: {
+                    //        'Content-Type': 'application/json',
+                    //        'Accept': 'application/json'
+                    //    },
+                    //    body: JSON.stringify(model);
+                    //};
+                    try {
+                        await formRef.value.validate();
+                        ElMessage.success('验证成功');
+                        console.log('data:');
+                        console.log(model.data);
+                        //fetch(url, options);
+                    } catch (error) {
+                        console.error(error);
+                        ElMessage.error('验证失败');
+                    }
+                };
+
+                return {
+                    appStore,
+                    url,
+                    model,
+                    errors,
+                    schema,
+                    submit
+                }
+            }
+        };
+    </script>
+}
+<!--Shared.Default.cshtml-->

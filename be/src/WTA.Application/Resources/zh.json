@@ -16,5 +16,17 @@
   "DataTypeAttribute_Upload": "字段 “{0}” 的扩展名必须为：{1} 。",
   "DataTypeAttribute_DateTime": "字段 “{0}” 不是有效的日期格式。",
   "CustomValidationAttribute": "“{0}” 是无效的。",
-  "ValidationAttribute": "字段 “{0}” 是无效的。"
+  "ValidationAttribute": "字段 “{0}” 是无效的。",
+  "SiteName": "[XX]管理系统",
+  "Copyright": "版权所有 © copyright ",
+  "Index": "序号",
+  "Name": "名称",
+  "Number": "编号",
+  "CreatedAt": "创建于",
+  "Createdby": "创建人",
+  "ModifiedAt": "修改于",
+  "ModifiedBy": "修改人",
+  "Operations": "操作",
+  "Disabled": "已禁用",
+  "DisplayOrder": "序号"
 }

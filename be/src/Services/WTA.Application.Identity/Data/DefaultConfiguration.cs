@@ -10,7 +10,8 @@ public class DefaultConfiguration :
     IEntityTypeConfiguration<Role>,
     IEntityTypeConfiguration<UserRole>,
     IEntityTypeConfiguration<Permission>,
-    IEntityTypeConfiguration<RolePermission>
+    IEntityTypeConfiguration<RolePermission>,
+    IEntityTypeConfiguration<MenuItem>
 
 {
     public void Configure(EntityTypeBuilder<User> builder)
@@ -46,6 +47,10 @@ public class DefaultConfiguration :
     }
 
     public void Configure(EntityTypeBuilder<Department> builder)
+    {
+    }
+
+    public void Configure(EntityTypeBuilder<MenuItem> builder)
     {
     }
 }

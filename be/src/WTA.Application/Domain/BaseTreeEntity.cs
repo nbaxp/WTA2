@@ -1,3 +1,5 @@
+using System.ComponentModel.DataAnnotations;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.WebUtilities;
 
 namespace WTA.Application.Domain;
@@ -5,10 +7,19 @@ namespace WTA.Application.Domain;
 public abstract class BaseTreeEntity<T> : BaseEntity where T : class
 {
     public List<T> Children { get; set; } = new List<T>();
+
+    [Display]
     public string Name { get; set; } = null!;
+
+    [Display]
     public string Number { get; set; } = null!;
+
     public T? Parent { get; set; }
+
+    [HiddenInput]
     public Guid? ParentId { get; set; }
+
+    [HiddenInput]
     public string Path { get; set; } = null!;
 
     public void UpdatePath(BaseTreeEntity<T>? parent)
