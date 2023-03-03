@@ -3,7 +3,7 @@ using WTA.Application.Domain;
 
 namespace WTA.Application.Identity.Domain;
 
-[Display(Name = "角色")]
+[Display(Name = "角色", Order = 2)]
 public class Role : BaseEntity
 {
     [Display(Name = "编号")]

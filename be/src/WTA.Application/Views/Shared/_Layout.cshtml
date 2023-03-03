@@ -4,7 +4,7 @@
 @inject WTA.Application.Abstractions.IMenuService menuService
 @{
     var basePath = ViewContext.HttpContext.Request.PathBase.HasValue ? ViewContext.HttpContext.Request.PathBase.Value : "/";
-    var name = @localizer["Name"];
+    var siteName = @localizer["SiteName"];
     var defaultLocale = requestLocalizationOptions.Value.DefaultRequestCulture.Culture.Name;
     var currentLocale = CultureInfo.CurrentCulture.Name;
     var resources = localizer.GetAllStrings().ToDictionary(o => o.Name, o => o.Value);
@@ -12,6 +12,7 @@
     var isAuthenticated = User.Identity!.IsAuthenticated;
     var userName = User.Identity.Name;
     var menus = menuService.GetMenus();
+    var action = this.ViewContext.HttpContext.Request.Path;
 }
 <!DOCTYPE html>
 <html lang="en">
@@ -21,7 +22,7 @@
     <base href="@basePath" />
     <link rel="icon" type="image/svg+xml" href="./assets/logo.svg" />
     <link rel="stylesheet" href="./src/main.css" />
-    <title>@name</title>
+    <title>@siteName</title>
 </head>
 <body>
     <div id="app"></div>
@@ -44,6 +45,7 @@
             "better-mock": "./libs/better-mock/mock.browser.esm.js",
             "vue-demi": "./libs/vue-demi/index.js",
             "resize-detector": "./libs/resize-detector/index.js",
+            "linq": "./libs/linq/linq.min.js",
             "html": "./src/utils/html.js",
             "request": "./src/request/index.js"
           }
@@ -71,6 +73,7 @@
                 isAuthenticated: @Json.Serialize(isAuthenticated),
                 name: '@userName'
             },
+            action:'@action',
             menus: @Json.Serialize(menus)
         };
         init(config);

@@ -11,9 +11,9 @@ namespace WTA.Infrastructure.Data;
 [Service<ILinqDynamic>]
 public class DefaultLinqDynamic : ILinqDynamic
 {
-    public IQueryable<T> Where<T>(IQueryable<T> source, string queryString, params object[] args)
+    static DefaultLinqDynamic()
     {
-        return DynamicQueryableExtensions.Where(source, queryString, args);
+        TypeAdapterConfig.GlobalSettings.Default.MaxDepth(3);
     }
 
     public IQueryable<T> OrderBy<T>(IQueryable<T> source, string ordering, params object[] args)
@@ -21,6 +21,15 @@ public class DefaultLinqDynamic : ILinqDynamic
         return DynamicQueryableExtensions.OrderBy(source, ordering, args);
     }
 
+    public List<TModel> ToList<TEntity, TModel>(IQueryable<TEntity> source) where TModel : class
+    {
+        return source.ProjectToType<TModel>().ToList();
+    }
+
+    public IQueryable<T> Where<T>(IQueryable<T> source, string queryString, params object[] args)
+    {
+        return DynamicQueryableExtensions.Where(source, queryString, args);
+    }
     public IQueryable<TEntity> Where<TEntity, TModel>(IQueryable<TEntity> source, TModel model) where TModel : class
     {
         var properties = model!.GetType().GetProperties(BindingFlags.Instance | BindingFlags.Public | BindingFlags.GetProperty);
@@ -52,10 +61,5 @@ public class DefaultLinqDynamic : ILinqDynamic
             }
         }
         return source;
-    }
-
-    public List<TModel> ToList<TEntity, TModel>(IQueryable<TEntity> source) where TModel : class
-    {
-        return source.ProjectToType<TModel>().ToList();
     }
 }

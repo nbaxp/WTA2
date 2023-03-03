@@ -22,7 +22,7 @@ public abstract class BaseTreeEntity<T> : BaseEntity where T : class
     [HiddenInput]
     public string Path { get; set; } = null!;
 
-    public void UpdatePath(BaseTreeEntity<T>? parent)
+    public void UpdatePath(BaseTreeEntity<T>? parent = null)
     {
         this.Path = $"/{WebEncoders.Base64UrlEncode(this.Id.ToByteArray())}";
         if (parent != null)

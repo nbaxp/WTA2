@@ -1,11 +1,12 @@
 import html from '../utils/index.js';
-import { reactive } from 'vue';
+import { reactive, computed } from 'vue';
 import { ElMessage, ElMessageBox } from 'element-plus';
 import SvgIcon from '../components/svg-icon.js';
 import { useAppStore } from '../store/index.js';
 
 import HeaderLogo from './header-logo.js';
 import HeaderSettings from './header-settings.js';
+import Enumerable from '../../libs/linq/linq.min.js';
 
 export default {
   components: { HeaderLogo, HeaderSettings, SvgIcon, ElMessage, ElMessageBox },
@@ -25,27 +26,26 @@ export default {
             <ep-fold v-else />
           </el-icon>
         </div>
-        <!-- <el-menu
-      mode="horizontal"
-      :default-active="$route.matched[0].path"
-      :ellipsis="false"
-      router
-    >
-      <template v-for="route in $router.options.routes">
-        <el-menu-item
-          v-if="!route.meta?.hide"
-          :key="route.path"
-          :index="route.path"
+        <el-menu
+          v-if="appStore.useTopMenus"
+          mode="horizontal"
+          :collapse-transition="false"
+          :default-active="activeIndex"
+          :ellipsis="false"
         >
-          <template #title>
-            <el-icon v-if="route.meta.icon">
-              <svg-icon :name="route.meta.icon" />
-            </el-icon>
-            <span>{{ route.meta?.title ?? route.path }}</span>
-          </template>
-        </el-menu-item>
-      </template>
-    </el-menu> -->
+          <el-menu-item
+            v-for="item in appStore.menus"
+            :key="item.id"
+            :index="item.Url"
+          >
+            <template #title>
+              <el-icon>
+                <svg-icon :name="item.icon??'folder'" />
+              </el-icon>
+              <span>{{ item.name }}</span>
+            </template>
+          </el-menu-item>
+        </el-menu>
       </div>
       <div class="d-flex justify-content-between align-items-center h-100">
         <el-space>
@@ -59,21 +59,21 @@ export default {
                 /></el-icon>
                 <span>{{ appStore.user.name }}</span>
                 <el-icon>
-                  <i-ep-arrow-down />
+                  <ep-arrow-down />
                 </el-icon>
               </el-space>
               <template #dropdown>
                 <el-dropdown-menu>
                   <el-dropdown-item>
                     <a to="/account">
-                      <el-icon> <i-ep-user /> </el-icon>{{$t('userCenter')}}
+                      <el-icon> <ep-user /> </el-icon>{{$t('userCenter')}}
                     </a>
                   </el-dropdown-item>
                   <el-dropdown-item
                     divided
                     @click="confirmLogout"
                   >
-                    <el-icon> <i-ep-switch-button /> </el-icon>退出登录
+                    <el-icon> <ep-switch-button /> </el-icon>退出登录
                   </el-dropdown-item>
                 </el-dropdown-menu>
               </template>
@@ -86,7 +86,7 @@ export default {
               <el-space>
                 <span>{{ userStore.roles.find((o) => o.number === userStore.currentRole)?.name }}</span>
                 <el-icon>
-                  <i-ep-arrow-down />
+                  <ep-arrow-down />
                 </el-icon>
               </el-space>
               <template #dropdown>
@@ -163,7 +163,11 @@ export default {
     //     router.push('/403');
     //   }
     // };
-
+    const activeIndex = computed(() => {
+      var current = appStore.action;
+      var root = Enumerable.from(appStore.menus).firstOrDefault((o) => current.indexOf(o.url) === 0);
+      return root.url;
+    });
     const confirmLogout = async () => {
       try {
         await ElMessageBox.confirm('确认退出？', '提示', { type: 'warning' });
@@ -181,6 +185,7 @@ export default {
       appStore,
       toggleMenu,
       confirmLogout,
+      activeIndex,
     };
   },
 };

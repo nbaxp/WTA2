@@ -1,8 +1,10 @@
+using System.ComponentModel.DataAnnotations;
 using System.Reflection;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Localization;
 using WTA.Application.Abstractions;
+using WTA.Application.Application;
 using WTA.Application.Domain;
 using WTA.Application.Extensions;
 using WTA.Application.Identity.Domain;
@@ -14,8 +16,26 @@ public class IdentityDbContext : IDbContext
     public void Seed(DbContext dbContext)
     {
         using var scope = App.Services!.CreateScope();
-        //
         var localizer = scope.ServiceProvider.GetRequiredService<IStringLocalizer>();
+        //
+        App.ModuleAssemblies?.ForEach(module =>
+        {
+            var moduleAttribute = module.GetCustomAttribute<ModuleAttribute>();
+            var moduleName = moduleAttribute!.Name;
+            var menuItem = new MenuItem { Number = moduleName, Name = localizer[moduleName], DisplayOrder = moduleAttribute.Order, Url = $"/{moduleName.ToUnderline()}/" };
+            module.GetTypes()
+            .Where(o => !o.IsAbstract && o.IsAssignableTo(typeof(IResource)) && !o.IsAssignableTo(typeof(IAssociation)))
+            .ForEach(o =>
+            {
+                var displayOrder = o.GetCustomAttribute<DisplayAttribute>()?.GetOrder() ?? 0;
+                menuItem.Children.Add(new MenuItem { Number = $"{moduleName}.{o.Name}", Name = o.GetDisplayName(), DisplayOrder = displayOrder, Url = $"/{moduleName.ToUnderline()}/{o.Name.ToUnderline()}/index" });
+            });
+            //
+            dbContext.Set<MenuItem>().Add(menuItem);
+            menuItem.UpdatePath();
+        });
+        dbContext.SaveChanges();
+        //
         var resourceTypes = App.ModuleAssemblies?
             .SelectMany(o => o.GetTypes())
             .Where(o => o.IsAssignableTo(typeof(BaseEntity)))

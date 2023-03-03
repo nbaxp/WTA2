@@ -23,6 +23,8 @@ export default function (config) {
   appStore.basePath = config.basePath;
   appStore.locale = config.locale;
   appStore.user = config.user;
+  appStore.menus = config.menus;
+  appStore.action = config.action;
   // use locale
   const localeConfig = {
     locale: appStore.locale.current,

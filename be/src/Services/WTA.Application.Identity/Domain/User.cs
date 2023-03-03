@@ -4,7 +4,7 @@ using WTA.Application.Domain;
 
 namespace WTA.Application.Identity.Domain;
 
-[Display(Name = "用户")]
+[Display(Name = "用户", Order = 1)]
 public class User : BaseEntity
 {
     public int AccessFailedCount { get; set; }
@@ -42,5 +42,6 @@ public class User : BaseEntity
     [Display(Name = "用户名")]
     [ReadOnly(true)]
     public string? UserName { get; set; }
+
     public List<UserRole> UserRoles { get; set; } = new List<UserRole>();
 }

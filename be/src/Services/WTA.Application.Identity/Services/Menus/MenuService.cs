@@ -18,8 +18,13 @@ public class MenuService : IMenuService
         this._menuItemRepository = menuItemRepository;
         this._distributedCache = distributedCache;
     }
+
     public List<MenuItemModel> GetMenus()
     {
-        return this._menuItemRepository.AsNoTracking().ToList<MenuItem,MenuItemModel>().Where(o=>o.ParentId==null).ToList();
+        return this._menuItemRepository
+            .AsNoTracking()
+            .Where(o => o.ParentId == null)
+            .OrderBy(o => o.DisplayOrder)
+            .ToList<MenuItem, MenuItemModel>();
     }
 }

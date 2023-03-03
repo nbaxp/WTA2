@@ -2,7 +2,7 @@ using Microsoft.AspNetCore.Builder;
 using WTA.Application.Abstractions;
 using WTA.Application.Application;
 
-[assembly: Module($"{nameof(WTA.Application.BaseData)}")]
+[assembly: Module($"{nameof(WTA.Application.BaseData)}", -1)]
 
 namespace WTA.Application.BaseData;
 

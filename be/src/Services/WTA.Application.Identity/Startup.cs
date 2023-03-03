@@ -2,7 +2,7 @@ using Microsoft.AspNetCore.Builder;
 using WTA.Application.Abstractions;
 using WTA.Application.Application;
 
-[assembly: Module($"{nameof(WTA.Application.Identity)}")]
+[assembly: Module($"{nameof(WTA.Application.Identity)}", -2)]
 
 namespace WTA.Application.Identity;
 

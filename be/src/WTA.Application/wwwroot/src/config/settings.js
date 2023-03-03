@@ -16,6 +16,7 @@ const settings = {
   roleSwitchable: true,
   loglevel: 'info',
   useHttpMethodOverride: false,
+  useTopMenus: true,
 };
 
 export default settings;
