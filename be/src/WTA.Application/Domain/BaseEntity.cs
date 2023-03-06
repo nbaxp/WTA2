@@ -31,10 +31,10 @@ public abstract class BaseEntity : IResource
     [Display]
     public string? CreatedBy { get; set; }
 
-    [Display]
+    [Display(Order = 100)]
     public bool Disabled { get; set; }
 
-    [Display]
+    [Display(Order = -1)]
     public int DisplayOrder { get; set; }
 
     [HiddenInput]

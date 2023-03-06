@@ -3,7 +3,7 @@ using WTA.Application.Identity.Domain;
 
 namespace WTA.Application.Identity.Services.Departments;
 
-public class DepartmentSearchModel : PaginationModel<Department>
+public class DepartmentSearchModel
 {
     public Guid? ParentId { get; set; }
 }

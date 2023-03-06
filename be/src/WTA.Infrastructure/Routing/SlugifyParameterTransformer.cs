@@ -7,6 +7,6 @@ public class SlugifyParameterTransformer : IOutboundParameterTransformer
 {
     public string? TransformOutbound(object? value)
     {
-        return value?.ToString()?.ToUnderline();
+        return value?.ToString()?.ToSlugify();
     }
 }

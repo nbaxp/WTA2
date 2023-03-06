@@ -36,7 +36,8 @@ export default {
           <el-menu-item
             v-for="item in appStore.menus"
             :key="item.id"
-            :index="item.Url"
+            :index="item.url"
+            @click="redirect(item)"
           >
             <template #title>
               <el-icon>
@@ -180,12 +181,19 @@ export default {
         });
       }
     };
+    const redirect = (o) => {
+      var url = Enumerable.from(o.children)
+        .orderBy((p) => p.displayOrder)
+        .firstOrDefault().url;
+      window.location.href = appStore.basePath === '/' ? url : `${appStore}${url}`;
+    };
     return {
       setting,
       appStore,
       toggleMenu,
       confirmLogout,
       activeIndex,
+      redirect,
     };
   },
 };

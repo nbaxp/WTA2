@@ -67,7 +67,7 @@ public class AccountController : BaseController
                     }
                     else
                     {
-                        var key = nameof(OAuth2TokenResult.AccessToken).ToUnderline();
+                        var key = nameof(OAuth2TokenResult.AccessToken).ToSlugify();
                         var accessTokenForCookie = this._tokenService.CreatAccessTokenForCookie(model.UserName, model.RememberMe, out var timeout);
                         var cookieOptions = new CookieOptions
                         {
@@ -167,7 +167,7 @@ public class AccountController : BaseController
     [HttpPost]
     public IActionResult Logout()
     {
-        var key = nameof(OAuth2TokenResult.AccessToken).ToUnderline();
+        var key = nameof(OAuth2TokenResult.AccessToken).ToSlugify();
         Response.Cookies.Delete(key);
         return Ok(true);
     }

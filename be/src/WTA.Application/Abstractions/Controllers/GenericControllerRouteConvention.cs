@@ -13,7 +13,7 @@ public class GenericControllerRouteConvention : IControllerModelConvention
             var genericType = controller.ControllerType.GenericTypeArguments[0];
             var moduleName = genericType.Assembly.GetName().Name;
             var groupName = moduleName?.Substring(moduleName.LastIndexOf('.') + 1);
-            var routeTemplate = $"{groupName?.ToUnderline()}/[controller]/[action]";
+            var routeTemplate = $"{groupName?.ToSlugify()}/[controller]/[action]";
             controller.Selectors.Add(new SelectorModel
             {
                 AttributeRouteModel = new AttributeRouteModel(new RouteAttribute(routeTemplate)),

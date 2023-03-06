@@ -1,20 +1,20 @@
-using WTA.Application.Abstractions.Controllers;
+using System.ComponentModel.DataAnnotations;
 using WTA.Application.Application;
 using WTA.Application.Identity.Domain;
 
 namespace WTA.Application.Identity.Services.Users;
 
-[Model<User>, ListModel<User>, SearchModel<User>]
-public class UserModel : PaginationModel<UserModel>
+[Model<User>, SearchModel<User>, ListModel<User>]
+public class UserModel
 {
     [OperatorType(OperatorType.Contains)]
+    [Display]
     public string? UserName { get; set; }
 
-    public string? NormalizedUserName { get; set; }
-
     [OperatorType(OperatorType.Equal)]
+    [Display]
     public string? Email { get; set; }
 
-    public string? NormalizedEmail { get; set; }
+    [Display]
     public bool EmailConfirmed { get; set; }
 }

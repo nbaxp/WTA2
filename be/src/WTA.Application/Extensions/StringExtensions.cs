@@ -15,6 +15,11 @@ public static class StringExtensions
         return new string(chars);
     }
 
+    public static string ToSlugify(this string input)
+    {
+        return Regex.Replace(input.ToString()!, "([a-z])([A-Z])", "$1-$2").ToLowerInvariant();
+    }
+
     public static string ToUnderline(this string input)
     {
         return Regex.Replace(input.ToString()!, "([a-z])([A-Z])", "$1_$2").ToLowerInvariant();

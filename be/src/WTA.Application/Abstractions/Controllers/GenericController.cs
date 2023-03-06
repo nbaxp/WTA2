@@ -17,8 +17,8 @@ namespace WTA.Application.Abstractions.Controllers;
 public class GenericController<TEntity, TModel, TListModel, TSearchModel> : Controller
   where TEntity : class
   where TModel : class
+  where TSearchModel : class
   where TListModel : class
-  where TSearchModel : PaginationModel<TListModel>
 {
     private readonly IRepository<TEntity> _repository;
 
@@ -30,7 +30,7 @@ public class GenericController<TEntity, TModel, TListModel, TSearchModel> : Cont
     #region List
 
     [HttpGet]
-    public virtual async Task<IActionResult> Index([FromQuery] TSearchModel model)
+    public virtual async Task<IActionResult> Index([FromQuery] PaginationModel<TSearchModel, TListModel> model)
     {
         try
         {

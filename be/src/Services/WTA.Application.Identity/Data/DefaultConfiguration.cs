@@ -19,7 +19,7 @@ public class DefaultConfiguration :
         builder.Property(o => o.UserName).IsRequired().HasMaxLength(64);
         builder.HasIndex(o => o.UserName);
         // 自动加载
-        builder.Navigation(o => o.UserRoles).AutoInclude();
+        // builder.Navigation(o => o.UserRoles).AutoInclude();
     }
 
     public void Configure(EntityTypeBuilder<Role> builder)
@@ -32,7 +32,7 @@ public class DefaultConfiguration :
     {
         builder.HasIndex(o => new { o.UserId, o.RoleId }).IsUnique();
         // 自动加载
-        builder.Navigation(o => o.Role).AutoInclude();
+        // builder.Navigation(o => o.Role).AutoInclude();
     }
 
     public void Configure(EntityTypeBuilder<Permission> builder)

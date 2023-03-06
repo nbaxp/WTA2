@@ -1,4 +1,5 @@
 using System.ComponentModel.DataAnnotations;
+using System.Diagnostics;
 using System.Reflection;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -15,20 +16,20 @@ public static class TypeExtensions
 {
     public static string GetDisplayName(this Type type)
     {
-        var scope = App.Services.CreateScope();
-        var localizer = scope.ServiceProvider.GetService<IStringLocalizer>();
+        var scope = App.Services?.CreateScope();
+        var localizer = scope?.ServiceProvider.GetService<IStringLocalizer>();
         var key = type.GetCustomAttribute<DisplayAttribute>()?.Name ?? type.Name;
-        return localizer.GetString(key);
+        return localizer!.GetString(key);
     }
 
-    public static object? GetMetadataForType(this Type modelType, IServiceProvider serviceProvider)
+    public static object GetMetadataForType(this Type modelType, IServiceProvider serviceProvider)
     {
         using var scope = serviceProvider.CreateScope();
         var meta = scope.ServiceProvider.GetRequiredService<IModelMetadataProvider>().GetMetadataForType(modelType);
         return meta.GetSchema(serviceProvider);
     }
 
-    public static object? GetSchema(this ModelMetadata meta, IServiceProvider serviceProvider)
+    public static object GetSchema(this ModelMetadata meta, IServiceProvider serviceProvider, ModelMetadata? parent = null)
     {
         var modelType = meta.UnderlyingOrModelType;
         var title = meta.ContainerType == null ? modelType.GetDisplayName() : meta.GetDisplayName();
@@ -42,64 +43,80 @@ public static class TypeExtensions
           { nameof(meta.ShowForEdit), meta.ShowForEdit },
           { nameof(meta.IsReadOnly), meta.IsReadOnly }
         };
-        ModelPropertyCollection? metaProperties = null;
+        // array
         if (meta.IsEnumerableType)
         {
-            schema.Add("type", "array");
-            metaProperties = meta.ElementMetadata!.Properties;
+            if (modelType != meta.ElementMetadata!.ModelType.UnderlyingSystemType)
+            {
+                schema.Add("type", "array");
+                //schema.Add("items", meta.ElementMetadata!.ModelType.GetMetadataForType(serviceProvider));
+                schema.Add("items", meta.ElementMetadata.GetSchema(serviceProvider, meta));
+            }
         }
         else
         {
             if (!modelType.IsValueType && modelType != typeof(string))
             {
                 schema.Add("type", "object");
-                metaProperties = meta.Properties;
+                schema.Add("$type", modelType.Name);
+                var properties = new Dictionary<string, object>();
+                foreach (var propertyMetadata in meta.Properties)
+                {
+                    if (meta.ContainerType != propertyMetadata.ContainerType)
+                    {
+                        var test = $"{meta.ContainerType?.Name}.{propertyMetadata.ContainerType?.Name}.{propertyMetadata.Name}";
+                        Debug.WriteLine(test);
+                        if (propertyMetadata.IsEnumerableType)
+                        {
+                            //array
+                            if (propertyMetadata.ElementType == propertyMetadata.ContainerType)
+                            {
+                                continue;
+                            }
+                        }
+                        else if (!propertyMetadata.ModelType.IsValueType && propertyMetadata.ModelType != typeof(string))
+                        {
+                            //object
+                            if (propertyMetadata.ModelType == propertyMetadata.ContainerType)
+                            {
+                                continue;
+                            }
+                            if (parent != null)
+                            {
+                                continue;
+                            }
+                        }
+                        properties.Add(propertyMetadata.Name!, propertyMetadata.GetSchema(serviceProvider, meta));
+                    }
+                }
+                schema.Add(nameof(properties), properties);
             }
             else
             {
-                schema.Add("type", meta.UnderlyingOrModelType.Name.ToLowerCamelCase());
+                schema.Add("type", GetJsonType(modelType));
+                schema.Add("$type", modelType.Name.ToLowerCamelCase());
             }
-        }
-        if (metaProperties != null)
-        {
-            var properties = new Dictionary<string, object>();
-            foreach (var propertyMetadata in metaProperties)
-            {
-                if (propertyMetadata.UnderlyingOrModelType.IsValueType || propertyMetadata.UnderlyingOrModelType == typeof(string))
-                {
-                    var propertyProperties = propertyMetadata.GetSchema(serviceProvider);
-                    if (propertyProperties != null && !properties.ContainsKey(propertyMetadata.Name!))
-                    {
-                        properties.Add(propertyMetadata.Name!, propertyProperties);
-                    }
-                }
-                else if (propertyMetadata.IsEnumerableType)
-                {
-                    if (propertyMetadata.ElementMetadata?.UnderlyingOrModelType != meta.UnderlyingOrModelType)
-                    {
-                        properties.Add("items", propertyMetadata.ElementMetadata?.ModelType.GetMetadataForType(serviceProvider)!);
-                    }
-                    //if (meta.MetadataKind == ModelMetadataKind.Property)
-                    //{
-                    //    continue;
-                    //}
-                    //if (propertyMetadata.ElementMetadata?.UnderlyingOrModelType == meta.UnderlyingOrModelType)
-                    //{
-                    //    continue;
-                    //}
-                }
-                else
-                {
-                    if (propertyMetadata.UnderlyingOrModelType == meta.UnderlyingOrModelType)
-                    {
-                        //continue;
-                    }
-                }
-            }
-            schema.Add(nameof(properties), properties);
         }
         schema.Add("rules", meta.GetRules(serviceProvider));
         return schema;
+    }
+
+    private static string GetJsonType(Type modelType)
+    {
+        if (modelType == typeof(bool))
+        {
+            return "boolean";
+        }
+        else if (modelType == typeof(short) ||
+            modelType == typeof(int) ||
+            modelType == typeof(long) ||
+            modelType == typeof(float) ||
+            modelType == typeof(double) ||
+            modelType == typeof(decimal))
+        {
+            return "number";
+        }
+        return modelType.Name.ToLowerCamelCase();
     }
 
     public static object GetRules(this ModelMetadata meta, IServiceProvider serviceProvider)

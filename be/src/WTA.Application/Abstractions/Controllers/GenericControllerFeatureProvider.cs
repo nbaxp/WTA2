@@ -30,9 +30,9 @@ public class GenericControllerFeatureProvider : IApplicationFeatureProvider<Cont
                 var listModelType = entityType.Assembly.GetTypes()
                     .FirstOrDefault(o => o.GetCustomAttributes().Any(a => a.GetType() == typeof(ListModelAttribute<>).MakeGenericType(entityType))) ?? entityType;
                 var searchModelType = entityType.Assembly.GetTypes()
-                    .FirstOrDefault(o => o.GetCustomAttributes().Any(a => a.GetType() == typeof(SearchModelAttribute<>).MakeGenericType(entityType))) ??
-                    typeof(PaginationModel<>).MakeGenericType(listModelType);
-                var typeInfo = typeof(GenericController<,,,>).MakeGenericType(entityType, modelType, listModelType, searchModelType).GetTypeInfo();
+                    .FirstOrDefault(o => o.GetCustomAttributes().Any(a => a.GetType() == typeof(SearchModelAttribute<>).MakeGenericType(entityType))) ?? entityType;
+                //var indexModelType = typeof(PaginationModel<,>).MakeGenericType(searchModelType, listModelType);
+                var typeInfo = typeof(GenericController<,,,>).MakeGenericType(entityType, modelType, searchModelType, listModelType).GetTypeInfo();
                 feature.Controllers.Add(typeInfo);
             }
         }

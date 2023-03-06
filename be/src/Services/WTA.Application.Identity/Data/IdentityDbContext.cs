@@ -22,13 +22,13 @@ public class IdentityDbContext : IDbContext
         {
             var moduleAttribute = module.GetCustomAttribute<ModuleAttribute>();
             var moduleName = moduleAttribute!.Name;
-            var menuItem = new MenuItem { Number = moduleName, Name = localizer[moduleName], DisplayOrder = moduleAttribute.Order, Url = $"/{moduleName.ToUnderline()}/" };
+            var menuItem = new MenuItem { Number = moduleName, Name = localizer[moduleName], DisplayOrder = moduleAttribute.Order, Url = $"/{moduleName.ToSlugify()}/" };
             module.GetTypes()
             .Where(o => !o.IsAbstract && o.IsAssignableTo(typeof(IResource)) && !o.IsAssignableTo(typeof(IAssociation)))
             .ForEach(o =>
             {
                 var displayOrder = o.GetCustomAttribute<DisplayAttribute>()?.GetOrder() ?? 0;
-                menuItem.Children.Add(new MenuItem { Number = $"{moduleName}.{o.Name}", Name = o.GetDisplayName(), DisplayOrder = displayOrder, Url = $"/{moduleName.ToUnderline()}/{o.Name.ToUnderline()}/index" });
+                menuItem.Children.Add(new MenuItem { Number = $"{moduleName}.{o.Name}", Name = o.GetDisplayName(), DisplayOrder = displayOrder, Url = $"/{moduleName.ToSlugify()}/{o.Name.ToSlugify()}/index" });
             });
             //
             dbContext.Set<MenuItem>().Add(menuItem);

@@ -28,7 +28,7 @@ const template = html`
             />
             <el-table-column
               v-if="!model.disableRowIndex"
-              :label="$t('index')"
+              :label="$t('rowIndex')"
               type="index"
               align="center"
               fixed="left"
@@ -38,7 +38,7 @@ const template = html`
               </template>
             </el-table-column>
             <template
-              v-for="(item, key) in model.schema.properties.items.properties"
+              v-for="(item, key) in model.schema.properties.items.items.properties"
               :key="key"
             >
               <template v-if="item.template !== 'hiddenInput'">

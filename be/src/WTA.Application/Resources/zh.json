@@ -19,7 +19,7 @@
   "ValidationAttribute": "字段 “{0}” 是无效的。",
   "SiteName": "[XX]管理系统",
   "Copyright": "版权所有 © copyright ",
-  "Index": "序号",
+  "RowIndex": "行号",
   "Name": "名称",
   "Number": "编号",
   "CreatedAt": "创建于",
