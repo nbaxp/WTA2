@@ -1,9 +1,10 @@
 using System.ComponentModel.DataAnnotations;
 using WTA.Application.Domain;
 
-namespace WTA.Application.Identity.Domain;
+namespace WTA.Application.Identity.Domain.SystemManagement;
 
 [Display(Name = "用户角色")]
+[SystemManagement]
 public class UserRole : BaseEntity, IAssociation
 {
     public Guid UserId { get; set; }

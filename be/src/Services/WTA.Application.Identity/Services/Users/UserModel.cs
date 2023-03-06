@@ -1,6 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 using WTA.Application.Application;
-using WTA.Application.Identity.Domain;
+using WTA.Application.Identity.Domain.SystemManagement;
 
 namespace WTA.Application.Identity.Services.Users;
 

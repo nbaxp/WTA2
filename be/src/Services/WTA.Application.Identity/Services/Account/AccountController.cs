@@ -9,7 +9,7 @@ using WTA.Application.Abstractions.Json;
 using WTA.Application.Abstractions.Token;
 using WTA.Application.Extensions;
 using WTA.Application.Identity.Controllers;
-using WTA.Application.Identity.Domain;
+using WTA.Application.Identity.Domain.SystemManagement;
 
 namespace WTA.Application.Identity.Services.Account;
 

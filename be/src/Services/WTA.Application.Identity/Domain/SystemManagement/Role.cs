@@ -1,9 +1,10 @@
 using System.ComponentModel.DataAnnotations;
 using WTA.Application.Domain;
 
-namespace WTA.Application.Identity.Domain;
+namespace WTA.Application.Identity.Domain.SystemManagement;
 
 [Display(Name = "角色", Order = 2)]
+[SystemManagement]
 public class Role : BaseEntity
 {
     [Display(Name = "编号")]

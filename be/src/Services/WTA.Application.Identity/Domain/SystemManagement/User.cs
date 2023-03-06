@@ -2,9 +2,10 @@ using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using WTA.Application.Domain;
 
-namespace WTA.Application.Identity.Domain;
+namespace WTA.Application.Identity.Domain.SystemManagement;
 
 [Display(Name = "用户", Order = 1)]
+[SystemManagement]
 public class User : BaseEntity
 {
     public int AccessFailedCount { get; set; }

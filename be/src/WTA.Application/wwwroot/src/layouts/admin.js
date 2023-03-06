@@ -46,7 +46,10 @@ export default {
     const appStore = useAppStore();
     const subMenus = computed(() => {
       if (appStore.useTopMenus) {
-        return Enumerable.from(appStore.menus).firstOrDefault((o) => appStore.action.indexOf(o.url) === 0).children;
+        return Enumerable.from(appStore.menus)
+          .where((o) => appStore.action.indexOf(o.url) === 0)
+          .orderByDescending((o) => o.url.length)
+          .firstOrDefault().children;
       } else {
         return appStore.menus;
       }

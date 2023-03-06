@@ -116,15 +116,16 @@ public class DefaultDbContext : DbContext
                 }
             });
             // 配置 TreeEntity
-            if (item.ClrType.IsAssignableTo(typeof(BaseTreeEntity<>)))
+            if (item.ClrType.IsAssignableTo(typeof(BaseTreeEntity<>).MakeGenericType(item.ClrType)))
             {
                 modelBuilder.Entity(item.ClrType).HasOne(nameof(BaseTreeEntity<BaseEntity>.Parent))
                     .WithMany(nameof(BaseTreeEntity<BaseEntity>.Children))
                     .HasForeignKey(new string[] { nameof(BaseTreeEntity<BaseEntity>.ParentId) })
                     .OnDelete(DeleteBehavior.SetNull);
                 modelBuilder.Entity(item.ClrType).Property(nameof(BaseTreeEntity<BaseEntity>.Name)).IsRequired();
-                modelBuilder.Entity(item.ClrType).Property(nameof(BaseTreeEntity<BaseEntity>.Number)).IsRequired();
-                modelBuilder.Entity(item.ClrType).Property(nameof(BaseTreeEntity<BaseEntity>.Path)).IsRequired();
+                modelBuilder.Entity(item.ClrType).Property(nameof(BaseTreeEntity<BaseEntity>.Number)).IsRequired().HasMaxLength(64);
+                modelBuilder.Entity(item.ClrType).Property(nameof(BaseTreeEntity<BaseEntity>.InternalPath)).IsRequired();
+                modelBuilder.Entity(item.ClrType).HasIndex(nameof(BaseTreeEntity<BaseEntity>.Number)).IsUnique();
             }
             // 配置多租户
             using var scope = _serviceScopeFactory.CreateScope();

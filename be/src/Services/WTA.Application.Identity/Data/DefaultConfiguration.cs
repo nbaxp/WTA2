@@ -1,6 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
-using WTA.Application.Identity.Domain;
+using WTA.Application.Identity.Domain.SystemManagement;
 
 namespace WTA.Application.Identity.Data;
 

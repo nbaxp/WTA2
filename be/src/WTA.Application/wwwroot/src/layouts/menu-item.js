@@ -6,7 +6,7 @@ import { useAppStore } from '../store/index.js';
 
 const template = html`<template v-for="item in model">
   <el-sub-menu
-    v-if="item.children.length"
+    v-if="item.children?.length"
     :key="item.id+'group'"
     :index="item.id+'group'"
   >

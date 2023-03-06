@@ -20,14 +20,14 @@ public abstract class BaseTreeEntity<T> : BaseEntity where T : class
     public Guid? ParentId { get; set; }
 
     [HiddenInput]
-    public string Path { get; set; } = null!;
+    public string InternalPath { get; set; } = null!;
 
     public void UpdatePath(BaseTreeEntity<T>? parent = null)
     {
-        this.Path = $"/{WebEncoders.Base64UrlEncode(this.Id.ToByteArray())}";
+        this.InternalPath = $"/{WebEncoders.Base64UrlEncode(this.Id.ToByteArray())}";
         if (parent != null)
         {
-            this.Path = $"{parent.Path}{this.Path}";
+            this.InternalPath = $"{parent.InternalPath}{this.InternalPath}";
         }
         if (this.Children.Any())
         {

@@ -1,6 +1,6 @@
 using Microsoft.Extensions.Caching.Distributed;
 using WTA.Application.Abstractions;
-using WTA.Application.Identity.Domain;
+using WTA.Application.Identity.Domain.SystemManagement;
 
 namespace WTA.Application.Identity.Services.Permissions;
 
