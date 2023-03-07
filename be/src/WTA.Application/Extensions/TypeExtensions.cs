@@ -64,8 +64,6 @@ public static class TypeExtensions
                 {
                     if (meta.ContainerType != propertyMetadata.ContainerType)
                     {
-                        var test = $"{meta.ContainerType?.Name}.{propertyMetadata.ContainerType?.Name}.{propertyMetadata.Name}";
-                        Debug.WriteLine(test);
                         if (propertyMetadata.IsEnumerableType)
                         {
                             //array

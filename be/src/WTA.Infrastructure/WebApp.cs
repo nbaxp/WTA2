@@ -348,7 +348,7 @@ public class WebApp
             options.DefaultRequestCulture = new RequestCulture(supportedCultures.First());
             options.SupportedCultures = supportedCultures;
             options.SupportedUICultures = supportedCultures;
-            options.RequestCultureProviders.Insert(0, new RouteDataRequestCultureProvider());
+            //options.RequestCultureProviders.Insert(0, new RouteDataRequestCultureProvider());
         });
     }
 

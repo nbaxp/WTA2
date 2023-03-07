@@ -1,5 +1,7 @@
+using System.Reflection;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ApplicationModels;
+using WTA.Application.Domain;
 using WTA.Application.Extensions;
 
 namespace WTA.Application.Abstractions.Controllers;
@@ -12,8 +14,14 @@ public class GenericControllerRouteConvention : IControllerModelConvention
         {
             var genericType = controller.ControllerType.GenericTypeArguments[0];
             var moduleName = genericType.Assembly.GetName().Name;
-            var groupName = moduleName?.Substring(moduleName.LastIndexOf('.') + 1);
-            var routeTemplate = $"{groupName?.ToSlugify()}/[controller]/[action]";
+            var moduleGroup = moduleName?.Substring(moduleName.LastIndexOf('.') + 1);
+            var groupAttribute = genericType.GetCustomAttributes().FirstOrDefault(a => a.GetType().IsAssignableTo(typeof(IGroup))) as IGroup;
+            var routeTemplate = $"{moduleGroup?.ToSlugify()}/";
+            if (groupAttribute != null)
+            {
+                routeTemplate += $"{groupAttribute?.Name.ToSlugify()}/";
+            }
+            routeTemplate += "[controller]/[action]";
             controller.Selectors.Add(new SelectorModel
             {
                 AttributeRouteModel = new AttributeRouteModel(new RouteAttribute(routeTemplate)),

@@ -20,6 +20,7 @@ export default function (config) {
   // use store
   app.use(store);
   const appStore = useAppStore();
+  appStore.settings.locale = config.locale.current;
   appStore.basePath = config.basePath;
   appStore.locale = config.locale;
   appStore.user = config.user;

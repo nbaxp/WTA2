@@ -20,6 +20,9 @@ public abstract class BaseEntity : IResource
 
     public static readonly ResourceAction Delete = ResourceAction.Delete();
 
+    [Display]
+    public bool IsReadonly { get; set; }
+
     [HiddenInput]
     public string? ConcurrencyStamp { get; set; }
 

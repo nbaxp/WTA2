@@ -21,7 +21,7 @@ const template = html`<el-container class="h-100">
           :collapse="appStore.menuCollapse"
           :default-active="appStore.action"
         >
-          <menu-item v-model="subMenus" />
+          <menu-item v-model="menus" />
         </el-menu>
       </el-scrollbar>
     </el-aside>
@@ -44,16 +44,11 @@ export default {
   template,
   setup() {
     const appStore = useAppStore();
-    const subMenus = computed(() => {
-      if (appStore.useTopMenus) {
-        return Enumerable.from(appStore.menus)
-          .where((o) => appStore.action.indexOf(o.url) === 0)
-          .orderByDescending((o) => o.url.length)
-          .firstOrDefault().children;
-      } else {
-        return appStore.menus;
-      }
+    const menus = computed(() => {
+      return Enumerable.from(appStore.menus)
+        .orderBy((o) => o.url.length)
+        .toArray();
     });
-    return { appStore, subMenus };
+    return { appStore, menus };
   },
 };

@@ -1,10 +1,18 @@
+using Microsoft.Extensions.Caching.Distributed;
+using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Localization;
 
 namespace WTA.Infrastructure.Localization;
 
 public class JsonStringLocalizerFactory : IStringLocalizerFactory
 {
-    public IStringLocalizer Create(Type resourceSource) => new JsonStringLocalizer();
+    private readonly IMemoryCache _cache;
 
-    public IStringLocalizer Create(string baseName, string location) => new JsonStringLocalizer();
+    public JsonStringLocalizerFactory(IMemoryCache cache)
+    {
+        this._cache = cache;
+    }
+    public IStringLocalizer Create(Type resourceSource) => new JsonStringLocalizer(this._cache);
+
+    public IStringLocalizer Create(string baseName, string location) => new JsonStringLocalizer(this._cache);
 }

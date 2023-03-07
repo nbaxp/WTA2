@@ -148,7 +148,8 @@ public class IdentityDbContext : IDbContext
                 {
                     Role=new Role{
                         Name= "admin",
-                        Nummber="admin"
+                        Nummber="admin",
+                        IsReadonly=true,
                     }
                 }
             }

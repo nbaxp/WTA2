@@ -1,6 +1,8 @@
+using System.Diagnostics;
 using System.Globalization;
 using System.Reflection;
 using System.Text.Json;
+using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Localization;
 using WTA.Application;
 using WTA.Application.Resources;
@@ -9,32 +11,11 @@ namespace WTA.Infrastructure.Localization;
 
 public class JsonStringLocalizer : IStringLocalizer
 {
-    public Lazy<Dictionary<string, string>> _dictionary;
+    private readonly IMemoryCache _cache;
 
-    public JsonStringLocalizer()
+    public JsonStringLocalizer(IMemoryCache cache)
     {
-        _dictionary = new Lazy<Dictionary<string, string>>(() =>
-        {
-            var result = new Dictionary<string, string>();
-            App.ModuleAssemblies?
-               .Concat(new Assembly[] { typeof(Resource).Assembly })
-               .ToList()
-               .ForEach(assembly =>
-               {
-                   var filePath = $"{assembly.GetName().Name}.Resources.{Thread.CurrentThread.CurrentCulture.Name}.json";
-                   using var stream = assembly.GetManifestResourceStream(filePath);
-                   if (stream is not null)
-                   {
-                       using var jdoc = JsonDocument.Parse(stream);
-                       var keyValues = jdoc.Deserialize<Dictionary<string, string>>();
-                       foreach (var item in keyValues!)
-                       {
-                           result[item.Key] = item.Value;
-                       }
-                   }
-               });
-            return result;
-        });
+        this._cache = cache;
     }
 
     public LocalizedString this[string name]
@@ -59,16 +40,46 @@ public class JsonStringLocalizer : IStringLocalizer
 
     public IEnumerable<LocalizedString> GetAllStrings(bool includeParentCultures)
     {
-        return _dictionary.Value.Select(o => new LocalizedString(o.Key, o.Value));
+        return GetAll().Select(o => new LocalizedString(o.Key, o.Value));
+    }
+
+    private Dictionary<string, string> GetAll()
+    {
+        var key = $"{nameof(JsonStringLocalizer)}.{Thread.CurrentThread.CurrentCulture.Name}";
+        var result = _cache.Get<Dictionary<string, string>>(key);
+        if (result == null)
+        {
+            result = new Dictionary<string, string>();
+            App.ModuleAssemblies?
+           .Concat(new Assembly[] { typeof(Resource).Assembly })
+           .ToList()
+           .ForEach(assembly =>
+           {
+               var filePath = $"{assembly.GetName().Name}.Resources.{Thread.CurrentThread.CurrentCulture.Name}.json";
+               using var stream = assembly.GetManifestResourceStream(filePath);
+               if (stream is not null)
+               {
+                   using var jdoc = JsonDocument.Parse(stream);
+                   var keyValues = jdoc.Deserialize<Dictionary<string, string>>();
+                   foreach (var item in keyValues!)
+                   {
+                       result[item.Key] = item.Value;
+                       Debug.WriteLine($"{item.Key}:{item.Value}");
+                   }
+               }
+           });
+        }
+        return result;
     }
 
     private string GetString(string key)
     {
-        if (_dictionary.Value.TryGetValue(key, out var value))
+        var _dictionary = GetAll();
+        if (_dictionary.TryGetValue(key, out var value))
         {
             return value;
         }
-        if (key.Contains('.') && _dictionary.Value.TryGetValue(key.Substring(key.IndexOf('.') + 1), out var value2))
+        if (key.Contains('.') && _dictionary.TryGetValue(key.Substring(key.IndexOf('.') + 1), out var value2))
         {
             return value2;
         }

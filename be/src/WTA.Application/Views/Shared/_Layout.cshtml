@@ -4,6 +4,10 @@
 @inject WTA.Application.Abstractions.IMenuService menuService
 @{
     var basePath = ViewContext.HttpContext.Request.PathBase.HasValue ? ViewContext.HttpContext.Request.PathBase.Value : "/";
+    if(basePath!="/"&&!basePath!.EndsWith("/"))
+    {
+        basePath += "/";
+    }
     var siteName = @localizer["SiteName"];
     var defaultLocale = requestLocalizationOptions.Value.DefaultRequestCulture.Culture.Name;
     var currentLocale = CultureInfo.CurrentCulture.Name;

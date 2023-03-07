@@ -16,6 +16,7 @@
 	<ItemGroup>
 	  <Content Remove="Resources\en.json" />
 	  <Content Remove="Resources\zh.json" />
+	  <Content Remove="wwwroot\robots.txt" />
 	  <Content Remove="wwwroot\src\components\app-list.js" />
 	</ItemGroup>
 
@@ -27,6 +28,10 @@
 	<ItemGroup>
 	  <PackageReference Include="Microsoft.EntityFrameworkCore" Version="7.0.3" />
 	  <PackageReference Include="Microsoft.Extensions.FileProviders.Embedded" Version="7.0.3" />
+	</ItemGroup>
+
+	<ItemGroup>
+	  <Service Include="{508349b6-6b84-4df5-91f0-309beebad82d}" />
 	</ItemGroup>
 
 </Project>

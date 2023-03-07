@@ -6,9 +6,13 @@ export default {
     :href="appStore.basePath"
     class="d-flex justify-content-center align-items-center h-100"
     :class="{ aside: hasAside, collapse: appStore.menuCollapse }"
+    style="min-width:44px;"
   >
-    <el-space>
-      <img src="./assets/logo.svg" />
+    <el-space class="h-100">
+      <img
+        src="./assets/logo.svg"
+        style="height:28px;"
+      />
       <h1
         v-if="!appStore.menuCollapse"
         class="p-0 m-0 text-lg"

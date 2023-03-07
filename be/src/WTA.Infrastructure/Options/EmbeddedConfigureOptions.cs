@@ -26,6 +26,7 @@ public class EmbeddedConfigureOptions : IPostConfigureOptions<StaticFileOptions>
                     Console.WriteLine(ex);
                 }
             });
+        providers.Add(new PhysicalFileProvider(Path.Combine(Directory.GetCurrentDirectory(), "wwwroot")));
         options.FileProvider = new CompositeFileProvider(providers.ToArray());
     }
 }
