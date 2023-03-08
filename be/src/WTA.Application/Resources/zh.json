@@ -29,5 +29,9 @@
   "ModifiedBy": "修改人",
   "Operations": "操作",
   "Disabled": "已禁用",
-  "DisplayOrder": "序号"
+  "DisplayOrder": "序号",
+  "ServerTime": "服务器时间",
+  "OSArchitecture": "系统架构",
+  "OSDescription": "操作系统",
+  "ProcessArchitecture": "进程架构"
 }

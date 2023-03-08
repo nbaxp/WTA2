@@ -64,7 +64,6 @@ public class JsonStringLocalizer : IStringLocalizer
                    foreach (var item in keyValues!)
                    {
                        result[item.Key] = item.Value;
-                       Debug.WriteLine($"{item.Key}:{item.Value}");
                    }
                }
            });

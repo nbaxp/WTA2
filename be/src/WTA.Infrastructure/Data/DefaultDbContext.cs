@@ -141,7 +141,7 @@ public class DefaultDbContext : DbContext
         }
     }
 
-    private void AfterSave(List<EntityEntry> entries, IServiceProvider services)
+    private static void AfterSave(List<EntityEntry> entries, IServiceProvider services)
     {
         foreach (var entry in entries)
         {

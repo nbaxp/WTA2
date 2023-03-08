@@ -1,6 +1,5 @@
-namespace WTA.Application.Wms
+namespace WTA.Application.Wms;
+
+public class Class1
 {
-    public class Class1
-    {
-    }
 }

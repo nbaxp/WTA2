@@ -1,5 +1,3 @@
-using WTA.Application.Abstractions;
-
 namespace WTA.Application.Abstractions;
 
 [Options]

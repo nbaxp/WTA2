@@ -1,4 +1,4 @@
-﻿namespace WTA.Infrastructure.GuidGenerators;
+namespace WTA.Infrastructure.GuidGenerators;
 
 public enum SequentialGuidType
 {

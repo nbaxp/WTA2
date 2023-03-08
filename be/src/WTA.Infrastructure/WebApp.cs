@@ -13,11 +13,11 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http.Extensions;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Localization;
-using Microsoft.AspNetCore.Localization.Routing;
 using Microsoft.AspNetCore.Mvc.ApiExplorer;
 using Microsoft.AspNetCore.Mvc.ApplicationModels;
 using Microsoft.AspNetCore.Mvc.Razor;
 using Microsoft.AspNetCore.Routing;
+using Microsoft.AspNetCore.SignalR;
 using Microsoft.AspNetCore.StaticFiles;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
@@ -33,6 +33,7 @@ using Swashbuckle.AspNetCore.SwaggerGen;
 using WTA.Application;
 using WTA.Application.Abstractions;
 using WTA.Application.Abstractions.Controllers;
+using WTA.Application.Abstractions.SignalR;
 using WTA.Application.Application;
 using WTA.Application.Extensions;
 using WTA.Application.Resources;
@@ -93,6 +94,12 @@ public class WebApp
         UseSwagger(app);
         UseAuthorization(app);
         UseDatabase(app);
+        UseSignalR<PageHub>(app);
+    }
+
+    protected virtual void UseSignalR<T>(WebApplication app, string pattern = "/hub") where T : Hub
+    {
+        app.MapHub<T>(pattern);
     }
 
     public virtual void ConfigureServices(WebApplicationBuilder builder)
@@ -110,6 +117,7 @@ public class WebApp
         builder.Services.AddTransient(typeof(IExportImportService<>), typeof(DefaultExportImportService<>));
         builder.Services.AddSingleton(new TypeAdapterConfig());
         builder.Services.AddScoped<IMapper, ServiceMapper>();
+        AddSignalR(builder);
         //builder.Services.AddEventBus();
         //builder.Services.AddTransient(typeof(IApplicationService<>), typeof(ApplicationService<>));
     }
@@ -167,6 +175,16 @@ public class WebApp
         }
     }
 
+    protected virtual void AddSignalR(WebApplicationBuilder builder)
+    {
+        var signalRServerBuilder = builder.Services.AddSignalR(o => o.EnableDetailedErrors = true);
+        if (!builder.Environment.IsDevelopment())
+        {
+            var redisConnectionString = builder.Configuration.GetConnectionString("Redis")!;
+            signalRServerBuilder.AddStackExchangeRedis(redisConnectionString, o => o.Configuration.ChannelPrefix = nameof(WebApp));
+        }
+    }
+
     #region add services
 
     /// <summary>
@@ -184,8 +202,20 @@ public class WebApp
             {
                 if (type.GetCustomAttribute(typeof(ServiceAttribute<>)) is IServiceAttribute implementation)
                 {
-                    var descriptor = new ServiceDescriptor(implementation.ServiceType, type, implementation.Lifetime);
-                    builder.Services.Add(descriptor);
+                    if (implementation.ServiceType.IsAssignableTo(typeof(IHostedService)))
+                    {
+                        // builder.Services.AddHostedService()ServiceCollectionHostedServiceExtensions
+                        var method = typeof(ServiceCollectionHostedServiceExtensions)
+                        .GetMethod(nameof(ServiceCollectionHostedServiceExtensions.AddHostedService),
+                        new[] { typeof(IServiceCollection) });
+                        method?.MakeGenericMethod(type).Invoke(null, new object[] { builder.Services });
+
+                    }
+                    else
+                    {
+                        var descriptor = new ServiceDescriptor(implementation.ServiceType, type, implementation.Lifetime);
+                        builder.Services.Add(descriptor);
+                    }
                 }
             });
     }
@@ -287,7 +317,7 @@ public class WebApp
     {
         builder.Services.AddScoped<DbContext, DefaultDbContext>();
         builder.Services.AddScoped(typeof(IRepository<>), typeof(EfRepository<>));
-        var dbConnectionName = builder.Configuration.GetConnectionString("Default");
+        var dbConnectionName = builder.Configuration.GetValue("Database", "SQLite");
         var connectionString = builder.Configuration.GetConnectionString(dbConnectionName!);
         builder.Services.AddPooledDbContextFactory<DefaultDbContext>(
             options =>

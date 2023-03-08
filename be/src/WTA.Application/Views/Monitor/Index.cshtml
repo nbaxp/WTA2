@@ -1,0 +1,40 @@
+﻿@using WTA.Application.Extensions
+@inject IStringLocalizer localizer
+@{
+    var action = Url.Action();
+}
+@section scripts{
+    <template id="page">
+        {{model}}
+    </template>
+    <script type="module">
+        import { ref, reactive, onMounted, onUnmounted } from 'vue';
+        import { ElMessage } from 'element-plus';
+        import request from 'request';
+        import { useAppStore } from './src/store/index.js';
+        import Chart from './src/components/chart.js';
+
+        window.page = {
+            components: { Chart },
+            template: '#page',
+            setup() {
+                const url = ref('@action');
+                var model = reactive(@Json.Serialize(Model));
+                var schema = reactive(@Json.Serialize(ViewData.ModelMetadata.GetSchema(ViewContext.HttpContext.RequestServices)));
+                onMounted(() => {
+                    PubSub.subscribe('monitor', (method, data) => {
+                        Object.assign(model, data.message);
+                    });
+                });
+                onUnmounted(() => {
+                    console.log('onUnmounted');
+                });
+                return {
+                    model,
+                    schema
+                }
+            }
+        };
+    </script>
+}
+<!--Shared.Default.cshtml-->

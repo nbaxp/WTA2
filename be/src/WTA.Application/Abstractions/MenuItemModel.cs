@@ -9,6 +9,6 @@ public class MenuItemModel
     public string Number { get; set; } = null!;
     public string? Icon { get; set; }
     public string? Url { get; set; }
-    public int DisplayOrder { get; set; } = 0;
+    public int DisplayOrder { get; set; }
     public Guid? ParentId { get; set; }
 }

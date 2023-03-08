@@ -58,6 +58,8 @@
     <script>
         window.process = { env: { NODE_ENV: 'production' } };
     </script>
+    <script src="./libs/pubsub-js/pubsub.min.js"></script>
+    <script src="./libs/@@microsoft/signalr/signalr.min.js"></script>
     @RenderSection("scripts",false)
     <script type="module">
         import layout from './src/layouts/admin.js';

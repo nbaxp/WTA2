@@ -1,4 +1,4 @@
-﻿namespace WTA.Application.Abstractions.Token;
+namespace WTA.Application.Abstractions.Token;
 
 public class OAuth2TokenResult
 {

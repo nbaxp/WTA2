@@ -15,6 +15,32 @@ export default function (config) {
       </app-layout>
     </app>`,
   };
+  //signalr
+  const connection = new signalR.HubConnectionBuilder().withUrl(`${config.basePath}hub`).build();
+  const connect = () => {
+    if (connection.state === signalR.HubConnectionState.Disconnected) {
+      connection
+        .start()
+        .then(function () {
+          console.log('signalr connected');
+        })
+        .catch(function (error) {
+          console.error(error);
+          setTimeout(connect, 5000);
+        });
+    }
+  };
+  connection.onclose(function () {
+    connect();
+  });
+  connection.on('Connected', function (id) {
+    window.connectionId = id;
+    //PubSub.publish('Connected');
+  });
+  connection.on('ServerToClient', function (method, message, to, from) {
+    PubSub.publish(method, { message: message, to: to, from: from });
+  });
+  connect();
   // create app
   const app = createApp(root);
   // use store
