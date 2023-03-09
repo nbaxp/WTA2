@@ -2,7 +2,6 @@ using System.Diagnostics;
 using System.Runtime.InteropServices;
 using System.Timers;
 using CZGL.SystemInfo;
-using Microsoft.Extensions.DependencyInjection;
 using WTA.Application.Abstractions;
 using WTA.Application.Services.Monitor;
 
@@ -51,15 +50,15 @@ public class MonitorService2 : IMonitorService, IDisposable
             ProcessArchitecture = RuntimeInformation.ProcessArchitecture.ToString(),
             ProcessorCount = Environment.ProcessorCount,
             CpuUsage = this._cpuUsage,
-            TotalPhysicalMemory = memory.TotalPhysicalMemory,
+            //TotalPhysicalMemory = memory.TotalPhysicalMemory,
             MemoryUsage = memory.UsedPhysicalMemory * 1.0 / memory.TotalPhysicalMemory,
-            SpeedSent = this._speedSent.Size,
-            SpeedReceived = this._speedReceived.Size,
+            //SpeedSent = this._speedSent.Size,
+            //SpeedReceived = this._speedReceived.Size,
             FrameworkDescription = RuntimeInformation.FrameworkDescription,
             ProcessName = process.ProcessName,
             ProcessCpuLoad = _processCpuLoad,
             TotalSeconds = process.TotalProcessorTime.TotalSeconds,
-            ProcessTotalMemory = process.PrivateMemorySize64
+            ProcessMemory = process.PrivateMemorySize64
         };
         return model;
     }

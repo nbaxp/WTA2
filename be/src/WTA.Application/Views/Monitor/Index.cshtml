@@ -61,8 +61,8 @@
                         </div>
                     </template>
                     <el-descriptions border direction="vertical">
-                        <el-descriptions-item label="读取">{{model.processorCount}}</el-descriptions-item>
-                        <el-descriptions-item label="写入">{{model.cpuLoad}}</el-descriptions-item>
+                        <el-descriptions-item label="读取">{{bytesFormat(model.diskRead)}}</el-descriptions-item>
+                        <el-descriptions-item label="写入">{{bytesFormat(model.diskWrite)}}</el-descriptions-item>
                     </el-descriptions>
                 </el-card>
             </el-col>
@@ -74,8 +74,8 @@
                         </div>
                     </template>
                     <el-descriptions border direction="vertical">
-                        <el-descriptions-item label="下载">{{model.speedReceived}}</el-descriptions-item>
-                        <el-descriptions-item label="上传">{{model.speedSent}}</el-descriptions-item>
+                        <el-descriptions-item label="下载">{{bytesFormat(model.speedReceived)}}</el-descriptions-item>
+                        <el-descriptions-item label="上传">{{bytesFormat(model.speedSent)}}</el-descriptions-item>
                     </el-descriptions>
                 </el-card>
             </el-col>
@@ -106,7 +106,7 @@
                         <el-descriptions-item label="架构">{{model.processArchitecture}}</el-descriptions-item>
                         <el-descriptions-item label="进程">{{model.processName}}</el-descriptions-item>
                         <el-descriptions-item label="CPU">{{persentFormat(model.processCpuLoad)}}</el-descriptions-item>
-                        <el-descriptions-item label="内存">{{bytesFormat(model.processTotalMemory)}}</el-descriptions-item>
+                        <el-descriptions-item label="内存">{{bytesFormat(model.processMemory)}}</el-descriptions-item>
                     </el-descriptions>
                 </el-card>
             </el-col>

@@ -1,5 +1,3 @@
-using System.Diagnostics;
-using System.Runtime.InteropServices;
 using Microsoft.AspNetCore.Mvc;
 using WTA.Application.Abstractions;
 using WTA.Application.Extensions;
@@ -14,6 +12,7 @@ public class MonitorController : Controller
     {
         this._monitorService = monitorService;
     }
+
     public IActionResult Index()
     {
         return this.Result(_monitorService.GetStatus());

@@ -35,7 +35,7 @@ public class MonitorModel
     public int ProcessorCount { get; set; }
 
     [Display]
-    public long ProcessTotalMemory { get; set; }
+    public float ProcessMemory { get; set; }
 
     [Display]
     public DateTimeOffset ServerTime { get; set; }
@@ -43,19 +43,23 @@ public class MonitorModel
     public string ServicePack { get; set; }
 
     [Display]
-    public decimal SpeedReceived { get; set; }
+    public float SpeedReceived { get; set; }
 
     [Display]
-    public decimal SpeedSent { get; set; }
+    public float SpeedSent { get; set; }
 
     [Display]
     public int ThreadCount { get; set; }
 
     [Display]
-    public ulong TotalPhysicalMemory { get; set; }
+    public long TotalPhysicalMemory { get; set; }
     [Display]
     public double TotalSeconds { get; set; }
 
     [Display]
     public string UserName { get; set; } = null!;
+    [Display]
+    public float DiskRead { get; set; }
+    [Display]
+    public float DiskWrite { get; set; }
 }
