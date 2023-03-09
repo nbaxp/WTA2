@@ -18,4 +18,22 @@ public class MonitorController : Controller
     {
         return this.Result(_monitorService.GetStatus());
     }
+
+    public IActionResult Test()
+    {
+        Task.Run(() =>
+        {
+            decimal result = 0;
+            Random rnd = new Random();
+            while (true)
+            {
+                result += rnd.Next(0, 100);
+                if (result % 100000 == 0)
+                {
+                    Thread.Sleep(10);//模拟其他非CPU计算操作
+                }
+            }
+        });
+        return Content("Test");
+    }
 }

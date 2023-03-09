@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using System.Net.Sockets;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.DependencyInjection;
@@ -23,8 +24,15 @@ public class MonitorHostedService : IHostedService
         {
             while (!cancellationToken.IsCancellationRequested)
             {
-                this.Callback();
-                await Task.Delay(2 * 1000).ConfigureAwait(true);
+                try
+                {
+                    this.Callback();
+                }
+                catch (Exception ex)
+                {
+                    Debug.WriteLine(ex.ToString());
+                }
+                await Task.Delay(1000 * 1).ConfigureAwait(false);
             }
         }, cancellationToken);
         return Task.CompletedTask;

@@ -50,7 +50,6 @@
             "vue-demi": "./libs/vue-demi/index.js",
             "resize-detector": "./libs/resize-detector/index.js",
             "linq": "./libs/linq/linq.min.js",
-            "html": "./src/utils/html.js",
             "request": "./src/request/index.js"
           }
         }
@@ -58,6 +57,8 @@
     <script>
         window.process = { env: { NODE_ENV: 'production' } };
     </script>
+    <script src="./libs/dayjs/dayjs.min.js"></script>
+    <script src="./libs/dayjs/locale/zh-cn.js"></script>
     <script src="./libs/pubsub-js/pubsub.min.js"></script>
     <script src="./libs/@@microsoft/signalr/signalr.min.js"></script>
     @RenderSection("scripts",false)

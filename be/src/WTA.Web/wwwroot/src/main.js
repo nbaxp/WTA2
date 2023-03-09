@@ -15,6 +15,8 @@ export default function (config) {
       </app-layout>
     </app>`,
   };
+  //dayjs
+  dayjs.locale('zh-cn');
   //signalr
   const connection = new signalR.HubConnectionBuilder().withUrl(`${config.basePath}hub`).build();
   const connect = () => {

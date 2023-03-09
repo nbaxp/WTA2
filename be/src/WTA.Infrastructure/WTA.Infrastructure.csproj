@@ -44,4 +44,10 @@
 		<ProjectReference Include="..\WTA.Application\WTA.Application.csproj" />
 	</ItemGroup>
 
+	<ItemGroup>
+	  <Reference Include="Opserver.Core">
+	    <HintPath>Opserver.Core.dll</HintPath>
+	  </Reference>
+	</ItemGroup>
+
 </Project>
