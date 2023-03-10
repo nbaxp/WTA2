@@ -12,6 +12,7 @@ namespace WTA.Application.Services.Monitor;
 public class MonitorHostedService : IHostedService
 {
     private readonly IServiceProvider _serviceProvider;
+    private readonly CancellationTokenSource _cancellationTokenSource = new CancellationTokenSource();
 
     public MonitorHostedService(IServiceProvider applicationServices)
     {
@@ -22,11 +23,11 @@ public class MonitorHostedService : IHostedService
     {
         Task.Run(async () =>
         {
-            while (!cancellationToken.IsCancellationRequested)
+            while (!_cancellationTokenSource.Token.IsCancellationRequested)
             {
                 try
                 {
-                    this.Callback();
+                    this.DoWork();
                 }
                 catch (Exception ex)
                 {
@@ -40,10 +41,11 @@ public class MonitorHostedService : IHostedService
 
     public Task StopAsync(CancellationToken cancellationToken)
     {
+        this._cancellationTokenSource.Cancel();
         return Task.CompletedTask;
     }
 
-    private void Callback()
+    private void DoWork()
     {
         using var scope = _serviceProvider.CreateScope();
         var hubContext = scope.ServiceProvider.GetRequiredService<IHubContext<PageHub>>();

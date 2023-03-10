@@ -22,15 +22,18 @@ public class MonitorController : Controller
     {
         Task.Run(() =>
         {
-            decimal result = 0;
-            Random rnd = new Random();
+            var fileName = "temp.txt";
+            var counter = 0;
             while (true)
             {
-                result += rnd.Next(0, 100);
-                if (result % 100000 == 0)
+                Thread.Sleep(10);
+                if (counter > 10000)
                 {
-                    Thread.Sleep(10);//模拟其他非CPU计算操作
+                    System.IO.File.WriteAllText(fileName,DateTime.Now.ToString());
                 }
+                Console.WriteLine(System.IO.File.ReadAllText(fileName));
+                using var sw = System.IO.File.AppendText(fileName);
+                sw.WriteLine(Guid.NewGuid());
             }
         });
         return Content("Test");

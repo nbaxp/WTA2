@@ -12,7 +12,7 @@ public class MonitorService : IMonitorService, IDisposable
 
     public MonitorService(IServiceProvider serviceProvider)
     {
-        this._monitorService = RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? new WindowsService(serviceProvider) : new LinuxService(serviceProvider);
+        this._monitorService = RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? new WindowsService() : new LinuxService();
     }
 
     public void Dispose()

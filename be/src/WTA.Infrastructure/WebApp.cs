@@ -178,7 +178,8 @@ public class WebApp
     protected virtual void AddSignalR(WebApplicationBuilder builder)
     {
         var signalRServerBuilder = builder.Services.AddSignalR(o => o.EnableDetailedErrors = true);
-        if (!builder.Environment.IsDevelopment())
+        var cacheConnectionName = builder.Configuration.GetConnectionString("DefaultCache");
+        if (cacheConnectionName!.ToLowerInvariant() == "redis")
         {
             var redisConnectionString = builder.Configuration.GetConnectionString("Redis")!;
             signalRServerBuilder.AddStackExchangeRedis(redisConnectionString, o => o.Configuration.ChannelPrefix = nameof(WebApp));
@@ -209,7 +210,6 @@ public class WebApp
                         .GetMethod(nameof(ServiceCollectionHostedServiceExtensions.AddHostedService),
                         new[] { typeof(IServiceCollection) });
                         method?.MakeGenericMethod(type).Invoke(null, new object[] { builder.Services });
-
                     }
                     else
                     {
@@ -298,8 +298,8 @@ public class WebApp
     protected virtual void AddCache(WebApplicationBuilder builder)
     {
         builder.Services.AddMemoryCache();
-        var cacheConnectionName = builder.Configuration.GetConnectionString("cache");
-        if (cacheConnectionName == "redis")
+        var cacheConnectionName = builder.Configuration.GetConnectionString("DefaultCache");
+        if (cacheConnectionName!.ToLowerInvariant() == "redis")
         {
             builder.Services.AddStackExchangeRedisCache(options =>
             {
@@ -317,12 +317,12 @@ public class WebApp
     {
         builder.Services.AddScoped<DbContext, DefaultDbContext>();
         builder.Services.AddScoped(typeof(IRepository<>), typeof(EfRepository<>));
-        var dbConnectionName = builder.Configuration.GetValue("Database", "SQLite");
+        var dbConnectionName = builder.Configuration.GetConnectionString("DefaultDatabase");
         var connectionString = builder.Configuration.GetConnectionString(dbConnectionName!);
         builder.Services.AddPooledDbContextFactory<DefaultDbContext>(
             options =>
             {
-                if (dbConnectionName!.ToLower() == "mysql")
+                if (dbConnectionName!.ToLowerInvariant() == "mysql")
                 {
                     options.UseMySql(connectionString, ServerVersion.AutoDetect(connectionString));
                 }

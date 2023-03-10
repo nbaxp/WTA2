@@ -23,6 +23,7 @@ public class EmbeddedConfigureOptions : IPostConfigureOptions<StaticFileOptions>
                 }
                 catch (Exception ex)
                 {
+                    Console.WriteLine(o.FullName);
                     Console.WriteLine(ex);
                 }
             });
