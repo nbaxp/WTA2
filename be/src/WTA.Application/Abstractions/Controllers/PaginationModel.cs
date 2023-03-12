@@ -7,5 +7,5 @@ public class PaginationModel<TSearchModel, TListModel>
     public string? OrderBy { get; set; }
     public int TotalCount { get; set; }
     public List<TListModel> Items { get; set; } = new List<TListModel>();
-    public TSearchModel Query { get; set; }
+    public TSearchModel Query { get; set; } = default!;
 }

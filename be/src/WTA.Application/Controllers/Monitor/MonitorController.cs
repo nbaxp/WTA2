@@ -1,3 +1,4 @@
+using System.Globalization;
 using Microsoft.AspNetCore.Mvc;
 using WTA.Application.Abstractions;
 using WTA.Application.Extensions;
@@ -29,7 +30,7 @@ public class MonitorController : Controller
                 Thread.Sleep(10);
                 if (counter > 10000)
                 {
-                    System.IO.File.WriteAllText(fileName,DateTime.Now.ToString());
+                    System.IO.File.WriteAllText(fileName, DateTime.Now.ToString(CultureInfo.InvariantCulture));
                 }
                 Console.WriteLine(System.IO.File.ReadAllText(fileName));
                 using var sw = System.IO.File.AppendText(fileName);

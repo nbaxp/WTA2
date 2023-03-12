@@ -1,6 +1,9 @@
 using System.Diagnostics;
+using System.Globalization;
 using System.Linq.Dynamic.Core;
 using System.Management;
+using System.Runtime.Versioning;
+using Microsoft.Extensions.DependencyInjection;
 using WTA.Application.Abstractions;
 using WTA.Application.Extensions;
 using WTA.Application.Services.Monitor;
@@ -10,6 +13,8 @@ namespace WTA.Infrastructure.Monitor;
 /// <summary>
 /// 单例
 /// </summary>
+[Service<IMonitorService>(ServiceLifetime.Singleton, PlatformType.Windows)]
+[SupportedOSPlatform("windows")]
 public class WindowsService : IMonitorService
 {
     private readonly PerformanceCounter CPUCounter = new PerformanceCounter("Processor", "% Processor Time", "_Total");
@@ -23,7 +28,7 @@ public class WindowsService : IMonitorService
     private readonly PerformanceCounter PhysicalDiskWriteCounter = new PerformanceCounter("PhysicalDisk", "Disk Write Bytes/sec", "_Total");
     private readonly List<PerformanceCounter> ReceivedCounters = new List<PerformanceCounter>();
     private readonly List<PerformanceCounter> SentCounters = new List<PerformanceCounter>();
-    private string[] Names = new string[] { };
+    private string[] Names = Array.Empty<string>();
 
     public WindowsService()
     {
@@ -62,15 +67,15 @@ public class WindowsService : IMonitorService
         using var mc = new ManagementClass("Win32_PhysicalMemory");
         foreach (ManagementObject item in mc.GetInstances())
         {
-            model.TotalPhysicalMemory += long.Parse(item.Properties["Capacity"].Value.ToString());
+            model.TotalPhysicalMemory += long.Parse(item.Properties["Capacity"].Value.ToString()!, CultureInfo.InvariantCulture);
             item.Dispose();
         }
-        Debug.WriteLine(model.CpuUsage.ToString("F2") + "," +
-            model.MemoryUsage.ToString("F2") + "," +
-            (model.SpeedReceived / 1024).ToString("F2") + "," +
-            (model.SpeedSent / 1024).ToString("F2") + "," +
-            (model.DiskRead / 1024).ToString("F2") + "," +
-            (model.DiskWrite / 1024).ToString("F2"));
+        Debug.WriteLine(model.CpuUsage.ToString("F2", CultureInfo.InvariantCulture) + "," +
+            model.MemoryUsage.ToString("F2", CultureInfo.InvariantCulture) + "," +
+            (model.SpeedReceived / 1024).ToString("F2", CultureInfo.InvariantCulture) + "," +
+            (model.SpeedSent / 1024).ToString("F2", CultureInfo.InvariantCulture) + "," +
+            (model.DiskRead / 1024).ToString("F2", CultureInfo.InvariantCulture) + "," +
+            (model.DiskWrite / 1024).ToString("F2", CultureInfo.InvariantCulture));
         return model;
     }
 

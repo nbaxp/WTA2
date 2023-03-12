@@ -1,5 +1,4 @@
 using System.ComponentModel.DataAnnotations;
-using Microsoft.Extensions.Logging;
 
 namespace WTA.Application.Services.Monitor;
 
@@ -60,7 +59,7 @@ public class MonitorModel
     public float ProcessDiskWrite { get; set; }
 
     [Display]
-    public string ProcessFileName { get; set; }
+    public string ProcessFileName { get; set; } = null!;
 
     [Display]
     public int processId { get; set; }
@@ -87,7 +86,7 @@ public class MonitorModel
     public DateTimeOffset ServerTime { get; set; }
 
     [Display]
-    public string ServicePack { get; set; }
+    public string ServicePack { get; set; } = null!;
 
     [Display]
     public float SpeedReceived { get; set; }

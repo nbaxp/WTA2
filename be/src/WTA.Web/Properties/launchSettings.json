@@ -12,18 +12,12 @@
     "WSL": {
       "commandName": "WSL",
       "launchBrowser": true,
-      "launchUrl": "https://localhost:5000",
+      "launchUrl": "http://localhost:5182",
       "environmentVariables": {
-        "ASPNETCORE_URLS": "http://localhost:5000",
-        "ASPNETCORE_ENVIRONMENT": "Development"
+        "ASPNETCORE_ENVIRONMENT": "Development",
+        "ASPNETCORE_URLS": "http://localhost:5182"
       },
-      "distributionName": "Ubuntu-20.04"
-    },
-    "Docker": {
-      "commandName": "Docker",
-      "launchBrowser": true,
-      "launchUrl": "{Scheme}://{ServiceHost}:{ServicePort}",
-      "publishAllPorts": true
+      "distributionName": ""
     }
   },
   "iisSettings": {

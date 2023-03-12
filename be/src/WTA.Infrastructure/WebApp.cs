@@ -1,6 +1,7 @@
 using System.Globalization;
 using System.IdentityModel.Tokens.Jwt;
 using System.Reflection;
+using System.Runtime.InteropServices;
 using System.Text;
 using System.Text.Encodings.Web;
 using System.Text.Json;
@@ -203,18 +204,21 @@ public class WebApp
             {
                 if (type.GetCustomAttribute(typeof(ServiceAttribute<>)) is IServiceAttribute implementation)
                 {
-                    if (implementation.ServiceType.IsAssignableTo(typeof(IHostedService)))
+                    if (implementation.Platform == null || RuntimeInformation.IsOSPlatform(implementation.Platform.Value))
                     {
-                        // builder.Services.AddHostedService()ServiceCollectionHostedServiceExtensions
-                        var method = typeof(ServiceCollectionHostedServiceExtensions)
-                        .GetMethod(nameof(ServiceCollectionHostedServiceExtensions.AddHostedService),
-                        new[] { typeof(IServiceCollection) });
-                        method?.MakeGenericMethod(type).Invoke(null, new object[] { builder.Services });
-                    }
-                    else
-                    {
-                        var descriptor = new ServiceDescriptor(implementation.ServiceType, type, implementation.Lifetime);
-                        builder.Services.Add(descriptor);
+                        if (implementation.ServiceType.IsAssignableTo(typeof(IHostedService)))
+                        {
+                            // builder.Services.AddHostedService()ServiceCollectionHostedServiceExtensions
+                            var method = typeof(ServiceCollectionHostedServiceExtensions)
+                            .GetMethod(nameof(ServiceCollectionHostedServiceExtensions.AddHostedService),
+                            new[] { typeof(IServiceCollection) });
+                            method?.MakeGenericMethod(type).Invoke(null, new object[] { builder.Services });
+                        }
+                        else
+                        {
+                            var descriptor = new ServiceDescriptor(implementation.ServiceType, type, implementation.Lifetime);
+                            builder.Services.Add(descriptor);
+                        }
                     }
                 }
             });
