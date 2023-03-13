@@ -97,7 +97,7 @@ public class LinuxService : IMonitorService
             .Select(o => int.Parse(o, CultureInfo.InvariantCulture))
             .ToArray();
         status.ProcessCpuTotal = processStatValues.Last();
-        status.ProcessCpuUsed=processStatValues.Take(2).Sum();
+        status.ProcessCpuUsed = processStatValues.Take(2).Sum();
         // memory
         var procMeminfo = File.ReadAllLines("/proc/meminfo");
         var memoryValues = procMeminfo
@@ -119,6 +119,37 @@ public class LinuxService : IMonitorService
         var outBytes = netValues.Sum(o => o.Transmit);
         status.NetReceived = inBytes;
         status.NetSent = outBytes;
+        //
+        try
+        {
+            using var process = new Process
+            {
+                StartInfo = new ProcessStartInfo
+                {
+                    CreateNoWindow = true,
+                    RedirectStandardOutput = true,
+                    RedirectStandardError = true,
+                    FileName = "bash",
+                    Arguments = "-c ps -eo nlwp | tail -n +2 | awk '{ num_threads += $1 } END { print num_threads }'",
+                },
+                EnableRaisingEvents = true
+            };
+            process.OutputDataReceived += (s, e) =>
+            {
+                Debug.WriteLine(e.Data);
+            };
+            process.ErrorDataReceived += (s, e) =>
+            {
+                Debug.WriteLine(e.Data);
+            };
+            process.Start();
+            process.BeginOutputReadLine();
+            process.BeginErrorReadLine();
+            process.WaitForExit();
+        }
+        catch (Exception ex)
+        {
+        }
         //
         return status;
     }
