@@ -50,7 +50,7 @@ public class MonitorModel
     public int ProcessCount { get; set; }
 
     [Display]
-    public double? ProcessCpuLoad { get; set; }
+    public double? ProcessCpuUsage { get; set; }
 
     [Display]
     public float ProcessDiskRead { get; set; }
@@ -89,16 +89,16 @@ public class MonitorModel
     public string ServicePack { get; set; } = null!;
 
     [Display]
-    public float SpeedReceived { get; set; }
+    public float NetReceived { get; set; }
 
     [Display]
-    public float SpeedSent { get; set; }
+    public float NetSent { get; set; }
 
     [Display]
     public int ThreadCount { get; set; }
 
     [Display]
-    public long TotalPhysicalMemory { get; set; }
+    public long TotalMemory { get; set; }
 
     [Display]
     public double TotalSeconds { get; set; }

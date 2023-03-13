@@ -53,6 +53,7 @@ public class WebApp
 {
     public WebApp()
     {
+        this.OSPlatformName = OperatingSystem.IsWindows() ? nameof(OSPlatform.Windows) : (OperatingSystem.IsLinux() ? nameof(OSPlatform.Linux) : nameof(OSPlatform.OSX));
         this.Name = Assembly.GetEntryAssembly()?.GetName().Name!;
 
         // AppDomain.CurrentDomain.GetAssemblies() 未被调用过的程序集不会被加载
@@ -82,6 +83,7 @@ public class WebApp
             .ToList();
     }
 
+    public string OSPlatformName { get; }
     public string Name { get; }
 
     public virtual void Configure(WebApplication app)
@@ -192,7 +194,7 @@ public class WebApp
     /// <summary>
     /// 根据 ImplementationAttribute 自动配置依赖注入
     /// </summary>
-    public static void AddDefaultServices(WebApplicationBuilder builder)
+    public virtual void AddDefaultServices(WebApplicationBuilder builder)
     {
         AppDomain.CurrentDomain.GetAssemblies()
             .Where(o => o.FullName!.StartsWith(nameof(WTA)))
@@ -204,7 +206,8 @@ public class WebApp
             {
                 if (type.GetCustomAttribute(typeof(ServiceAttribute<>)) is IServiceAttribute implementation)
                 {
-                    if (implementation.Platform == null || RuntimeInformation.IsOSPlatform(implementation.Platform.Value))
+                    var currentPlatformType = (PlatformType)Enum.Parse(typeof(PlatformType), this.OSPlatformName);
+                    if (implementation.PlatformType.HasFlag(currentPlatformType))
                     {
                         if (implementation.ServiceType.IsAssignableTo(typeof(IHostedService)))
                         {
@@ -415,6 +418,7 @@ public class WebApp
             options.JsonSerializerOptions.DictionaryKeyPolicy = JsonNamingPolicy.CamelCase;
             options.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles;
             options.JsonSerializerOptions.Encoder = JavaScriptEncoder.Create(UnicodeRanges.All);
+            options.JsonSerializerOptions.NumberHandling = JsonNumberHandling.AllowNamedFloatingPointLiterals;
             if (builder.Environment.IsDevelopment())
             {
                 options.JsonSerializerOptions.WriteIndented = true;

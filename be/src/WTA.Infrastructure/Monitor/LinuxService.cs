@@ -2,8 +2,10 @@ using System.Diagnostics;
 using System.Globalization;
 using System.Runtime.InteropServices;
 using System.Runtime.Versioning;
+using System.Text.RegularExpressions;
 using Microsoft.Extensions.DependencyInjection;
 using WTA.Application.Abstractions;
+using WTA.Application.Extensions;
 using WTA.Application.Services.Monitor;
 
 namespace WTA.Infrastructure.Monitor;
@@ -17,14 +19,15 @@ public class LinuxService : IMonitorService
 {
     private readonly CancellationTokenSource _cts;
     private readonly Stopwatch _stopWatch;
-    private double _cpuUsage;
+    private MonitorModel _model;
     private LinuxStatusModel? _prevStatus;
 
     public LinuxService()
     {
+        this._model = MonitorHelper.CreateModel();
         this._cts = new CancellationTokenSource();
         this._stopWatch = new Stopwatch();
-        Task.Run(() =>
+        Task.Run(async () =>
         {
             while (!this._cts.IsCancellationRequested)
             {
@@ -37,9 +40,10 @@ public class LinuxService : IMonitorService
                 {
                     this._stopWatch.Stop();
                     this.DoWork();
+                    this._stopWatch.Reset();
                     this._stopWatch.Start();
                 }
-                Task.Delay(1000);
+                await Task.Delay(1000 * 1).ConfigureAwait(false);
             }
         }, this._cts.Token);
     }
@@ -51,61 +55,83 @@ public class LinuxService : IMonitorService
 
     public MonitorModel GetStatus()
     {
-        var model = Monitor.CreateModel();
-        try
-        {
-            model.CpuUsage = this._cpuUsage;
-        }
-        catch (Exception ex)
-        {
-            Console.WriteLine(ex.ToString());
-        }
-
-        return model;
+        return this._model;
     }
 
-    private static double GetCpuUsage()
-    {
-        var stats = File.ReadAllLines("/proc/stat");
-        var values = stats.First()
-            .Split(' ', StringSplitOptions.RemoveEmptyEntries)
-            .Skip(1)
-            .Select(o => int.Parse(o, CultureInfo.InvariantCulture)).ToArray();
-        var cpuUsage = 1 - 1.0 * values[3] / values.Sum(o => o);
-        return cpuUsage;
-    }
-
-    //curl -sSL https://aka.ms/getvsdbgsh | /bin/sh /dev/stdin -v latest -l ~/vsdb
     [DllImport("libc")]
-    private static extern int getpid();
+    public static extern ulong TimevalToJiffies(uint input);
 
     private void DoWork()
     {
         if (_prevStatus != null)
         {
-            var elapsed = this._stopWatch.Elapsed;
+            Debug.WriteLine("timer:" + this._stopWatch.ElapsedMilliseconds);
+            var microseconds = this._stopWatch.Elapsed.TotalMicroseconds;
+            this._model = MonitorHelper.CreateModel();
             var status = this.DoWorkInternal();
-            this._cpuUsage = 1 - 1.0 * (status.CpuIdle - this._prevStatus.CpuIdle) / (status.CpuTotal - this._prevStatus.CpuTotal);
+            this._model.CpuUsage = 1 - 1.0 * (status.CpuIdle - this._prevStatus.CpuIdle) / (status.CpuTotal - this._prevStatus.CpuTotal);
+            this._model.ProcessCpuUsage = 1.0 * (status.ProcessCpuUsed - this._prevStatus.ProcessCpuUsed) / (status.CpuTotal - this._prevStatus.CpuTotal);
+            this._model.TotalMemory = status.TotalMemory;
+            this._model.MemoryUsage = 1 - 1.0 * status.MemoryFree / status.TotalMemory;
+            this._model.NetReceived = (float)(1.0f * (status.NetReceived - this._prevStatus.NetReceived) / (microseconds / 1_000_000));
+            this._model.NetSent = (float)(1.0f * (status.NetSent - this._prevStatus.NetSent) / (microseconds / 1_000_000));
         }
     }
 
-    private LinuxStatusModel DoWorkInternal()
+    protected virtual LinuxStatusModel DoWorkInternal()
     {
-        var stats = File.ReadAllLines($"/proc/stat");
-        var values = stats.First().Split(' ', StringSplitOptions.RemoveEmptyEntries)
+        var status = new LinuxStatusModel();
+        // cpu
+        var procStat = File.ReadAllLines("/proc/stat");
+        var statValues = procStat.First().Split(' ', StringSplitOptions.RemoveEmptyEntries)
             .Skip(1)
             .Select(o => int.Parse(o, CultureInfo.InvariantCulture))
             .ToArray();
-        return new LinuxStatusModel
-        {
-            CpuTotal = values.Sum(),
-            CpuIdle = values[3]
-        };
+        status.CpuTotal = statValues.Sum();
+        status.CpuIdle = statValues[3];
+        // process cpu
+        var processProcStat = File.ReadAllLines($"/proc/{MonitorHelper.CurrentProcess.Id}/stat");
+        var processStatValues = processProcStat.First().Split(' ', StringSplitOptions.RemoveEmptyEntries)
+            .Skip(13)
+            .Take(9)
+            .Select(o => int.Parse(o, CultureInfo.InvariantCulture))
+            .ToArray();
+        status.ProcessCpuTotal = processStatValues.Last();
+        status.ProcessCpuUsed=processStatValues.Take(2).Sum();
+        // memory
+        var procMeminfo = File.ReadAllLines("/proc/meminfo");
+        var memoryValues = procMeminfo
+            .Take(2)
+            .Select(o => Regex.Match(o, @"(\S+):\s+(\d+)").Groups.Values.Skip(1).Select(o => o.Value.Trim()).ToList())
+            .Select(o => new KeyValuePair<string, long>(o.First(), long.Parse(o.Last(), CultureInfo.InvariantCulture)))
+            .ToDictionary(o => o.Key, o => o.Value);
+        status.TotalMemory = memoryValues["MemTotal"] * 1024;
+        status.MemoryFree = memoryValues["MemFree"] * 1024;
+        // network
+        var procNetDev = File.ReadAllLines("/proc/net/dev");
+        var netValues = procNetDev.Skip(2)
+            .Select(o => Regex.Match(o, @"\s*(\S+):\s*(\d+)\s*\d+\s*\d+\s*\d+\s*\d+\s*\d+\s*\d+\s*\d+\s*(\d+)").Groups)
+            .Where(o => o.Count == 4 && o[2].Value != "lo")
+            .Select(o => o.Values.Skip(2).Select(o => o.Value.Trim()).ToList())
+            .Select(o => new { Receive = long.Parse(o.First(), CultureInfo.InvariantCulture), Transmit = long.Parse(o.Last(), CultureInfo.InvariantCulture) })
+            .ToList();
+        var inBytes = netValues.Sum(o => o.Receive);
+        var outBytes = netValues.Sum(o => o.Transmit);
+        status.NetReceived = inBytes;
+        status.NetSent = outBytes;
+        //
+        return status;
     }
 }
 
 public class LinuxStatusModel
 {
-    public int CpuTotal { get; set; }
     public int CpuIdle { get; set; }
+    public int CpuTotal { get; set; }
+    public long MemoryFree { get; set; }
+    public long TotalMemory { get; set; }
+    public long NetReceived { get; set; }
+    public long NetSent { get; set; }
+    public int ProcessCpuTotal { get; internal set; }
+    public int ProcessCpuUsed { get; internal set; }
 }

@@ -19,9 +19,9 @@ public class WindowsService : IMonitorService
 {
     private readonly PerformanceCounter CPUCounter = new PerformanceCounter("Processor", "% Processor Time", "_Total");
     private readonly PerformanceCounter ThreadCounter = new PerformanceCounter("Process", "Thread Count", "_Total");
-    private readonly PerformanceCounter ProcessDistReadCounter = new PerformanceCounter("Process", "IO Read Bytes/sec", Monitor.CurrentProcess.ProcessName);
-    private readonly PerformanceCounter ProcessDistWriteCounter = new PerformanceCounter("Process", "IO Write Bytes/sec", Monitor.CurrentProcess.ProcessName);
-    private readonly PerformanceCounter ProcessCPUCounter = new PerformanceCounter("Process", "% Processor Time", Monitor.CurrentProcess.ProcessName);
+    private readonly PerformanceCounter ProcessDistReadCounter = new PerformanceCounter("Process", "IO Read Bytes/sec", MonitorHelper.CurrentProcess.ProcessName);
+    private readonly PerformanceCounter ProcessDistWriteCounter = new PerformanceCounter("Process", "IO Write Bytes/sec", MonitorHelper.CurrentProcess.ProcessName);
+    private readonly PerformanceCounter ProcessCPUCounter = new PerformanceCounter("Process", "% Processor Time", MonitorHelper.CurrentProcess.ProcessName);
     private readonly PerformanceCounter MemoryCounter = new PerformanceCounter("Memory", "% Committed Bytes In Use");
     private readonly PerformanceCounterCategory NetworkInterfaceCategory = new PerformanceCounterCategory("Network Interface");
     private readonly PerformanceCounter PhysicalDiskReadCounter = new PerformanceCounter("PhysicalDisk", "Disk Read Bytes/sec", "_Total");
@@ -51,14 +51,13 @@ public class WindowsService : IMonitorService
 
     public MonitorModel GetStatus()
     {
-        var model = Monitor.CreateModel();
+        var model = MonitorHelper.CreateModel();
         model.CpuUsage = CPUCounter.NextValue() / 100;
-        model.ProcessCpuLoad = ProcessCPUCounter.NextValue() / 100 / Environment.ProcessorCount;
+        model.ProcessCpuUsage = ProcessCPUCounter.NextValue() / 100 / Environment.ProcessorCount;
         model.MemoryUsage = MemoryCounter.NextValue() / 100;
-        model.ProcessMemory = Monitor.CurrentProcess.PrivateMemorySize64;
         this.UpdateNetWorkCounters();
-        model.SpeedReceived = ReceivedCounters.Sum(o => o.NextValue());
-        model.SpeedSent = SentCounters.Sum(o => o.NextValue());
+        model.NetReceived = ReceivedCounters.Sum(o => o.NextValue());
+        model.NetSent = SentCounters.Sum(o => o.NextValue());
         model.DiskRead = PhysicalDiskReadCounter.NextValue();
         model.DiskWrite = PhysicalDiskWriteCounter.NextValue();
         model.ProcessDiskRead = ProcessDistReadCounter.NextValue();
@@ -67,13 +66,13 @@ public class WindowsService : IMonitorService
         using var mc = new ManagementClass("Win32_PhysicalMemory");
         foreach (ManagementObject item in mc.GetInstances())
         {
-            model.TotalPhysicalMemory += long.Parse(item.Properties["Capacity"].Value.ToString()!, CultureInfo.InvariantCulture);
+            model.TotalMemory += long.Parse(item.Properties["Capacity"].Value.ToString()!, CultureInfo.InvariantCulture);
             item.Dispose();
         }
         Debug.WriteLine(model.CpuUsage.ToString("F2", CultureInfo.InvariantCulture) + "," +
             model.MemoryUsage.ToString("F2", CultureInfo.InvariantCulture) + "," +
-            (model.SpeedReceived / 1024).ToString("F2", CultureInfo.InvariantCulture) + "," +
-            (model.SpeedSent / 1024).ToString("F2", CultureInfo.InvariantCulture) + "," +
+            (model.NetReceived / 1024).ToString("F2", CultureInfo.InvariantCulture) + "," +
+            (model.NetSent / 1024).ToString("F2", CultureInfo.InvariantCulture) + "," +
             (model.DiskRead / 1024).ToString("F2", CultureInfo.InvariantCulture) + "," +
             (model.DiskWrite / 1024).ToString("F2", CultureInfo.InvariantCulture));
         return model;

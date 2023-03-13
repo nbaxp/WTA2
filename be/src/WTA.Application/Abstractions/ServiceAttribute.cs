@@ -1,4 +1,3 @@
-using System.Runtime.InteropServices;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace WTA.Application.Abstractions;
@@ -11,25 +10,14 @@ public class ServiceAttribute<T> : Attribute, IServiceAttribute
     /// </summary>
     /// <param name="lifetime"></param>
     /// <param name="platform"></param>
-    public ServiceAttribute(ServiceLifetime lifetime = ServiceLifetime.Transient, PlatformType platform = PlatformType.All)
+    public ServiceAttribute(ServiceLifetime lifetime = ServiceLifetime.Transient, PlatformType platformType = PlatformType.All)
     {
         this.ServiceType = typeof(T);
         this.Lifetime = lifetime;
-        if (platform == PlatformType.Windows)
-        {
-            this.Platform = OSPlatform.Windows;
-        }
-        else if (platform == PlatformType.Linux)
-        {
-            this.Platform = OSPlatform.Linux;
-        }
-        else if (platform == PlatformType.OSX)
-        {
-            this.Platform = OSPlatform.OSX;
-        }
+        PlatformType = platformType;
     }
 
-    public Type ServiceType { get; }
     public ServiceLifetime Lifetime { get; }
-    public OSPlatform? Platform { get; }
+    public PlatformType PlatformType { get; }
+    public Type ServiceType { get; }
 }
