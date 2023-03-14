@@ -4,9 +4,10 @@ obj/
 logs/
 node_modules/
 
-.bak
-.suo
-.log
+*.bak
+*.user
+*.suo
+*.log
 *.db
 *.db-shm
 *.db-wal
