@@ -43,7 +43,7 @@ public class BaseService
             GCTotalMemory = GC.GetTotalMemory(false),
             FinalizationPendingCount = gcMemoryInfo.FinalizationPendingCount,
             HeapSizeBytes = gcMemoryInfo.HeapSizeBytes,
-            ProcessMemory = CurrentProcess.PrivateMemorySize64
+            ProcessMemory = CurrentProcess.WorkingSet64
         };
         return model;
     }
