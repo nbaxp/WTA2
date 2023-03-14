@@ -27,6 +27,7 @@ public class MonitorHostedService : IHostedService
             {
                 try
                 {
+                    //Debug.WriteLine($"{(OperatingSystem.IsWindows() ? "dir" : "ls")}".RunCommand());
                     this.DoWork();
                 }
                 catch (Exception ex)

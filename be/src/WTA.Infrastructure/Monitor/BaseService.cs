@@ -6,16 +6,20 @@ using WTA.Application.Services.Monitor;
 
 namespace WTA.Infrastructure.Monitor;
 
-public class MonitorHelper// : IHostedService
+public class BaseService
 {
-    public static Process CurrentProcess = Process.GetCurrentProcess();
+    public Process CurrentProcess = Process.GetCurrentProcess();
 
-    public static MonitorModel CreateModel()
+    public BaseService()
+    {
+    }
+
+    public MonitorModel CreateModel()
     {
         var addresses = Dns.GetHostAddresses(Dns.GetHostName())
             .Where(o => o.AddressFamily == AddressFamily.InterNetwork)
             .Select(o => o.ToString())
-            .Where(o=>!o.StartsWith("127."))
+            .Where(o => !o.StartsWith("127."))
             .ToArray();
         var gcMemoryInfo = GC.GetGCMemoryInfo();
         var model = new MonitorModel
@@ -40,7 +44,7 @@ public class MonitorHelper// : IHostedService
             FinalizationPendingCount = gcMemoryInfo.FinalizationPendingCount,
             HeapSizeBytes = gcMemoryInfo.HeapSizeBytes,
             ProcessMemory = CurrentProcess.PrivateMemorySize64
-    };
+        };
         return model;
     }
 }

@@ -25,6 +25,7 @@ public class MonitorController : Controller
         {
             var fileName = "temp.txt";
             var counter = 0;
+            System.IO.File.Create(fileName).Dispose();
             while (true)
             {
                 Thread.Sleep(10);

@@ -15,13 +15,13 @@ namespace WTA.Infrastructure.Monitor;
 /// </summary>
 [Service<IMonitorService>(ServiceLifetime.Singleton, PlatformType.Windows)]
 [SupportedOSPlatform("windows")]
-public class WindowsService : IMonitorService
+public class WindowsService : BaseService, IMonitorService
 {
     private readonly PerformanceCounter CPUCounter = new PerformanceCounter("Processor", "% Processor Time", "_Total");
     private readonly PerformanceCounter ThreadCounter = new PerformanceCounter("Process", "Thread Count", "_Total");
-    private readonly PerformanceCounter ProcessDistReadCounter = new PerformanceCounter("Process", "IO Read Bytes/sec", MonitorHelper.CurrentProcess.ProcessName);
-    private readonly PerformanceCounter ProcessDistWriteCounter = new PerformanceCounter("Process", "IO Write Bytes/sec", MonitorHelper.CurrentProcess.ProcessName);
-    private readonly PerformanceCounter ProcessCPUCounter = new PerformanceCounter("Process", "% Processor Time", MonitorHelper.CurrentProcess.ProcessName);
+    private readonly PerformanceCounter ProcessDistReadCounter;
+    private readonly PerformanceCounter ProcessDistWriteCounter;
+    private readonly PerformanceCounter ProcessCPUCounter;
     private readonly PerformanceCounter MemoryCounter = new PerformanceCounter("Memory", "% Committed Bytes In Use");
     private readonly PerformanceCounterCategory NetworkInterfaceCategory = new PerformanceCounterCategory("Network Interface");
     private readonly PerformanceCounter PhysicalDiskReadCounter = new PerformanceCounter("PhysicalDisk", "Disk Read Bytes/sec", "_Total");
@@ -32,6 +32,9 @@ public class WindowsService : IMonitorService
 
     public WindowsService()
     {
+        this.ProcessDistReadCounter = new PerformanceCounter("Process", "IO Read Bytes/sec", base.CurrentProcess.ProcessName);
+        this.ProcessDistWriteCounter = new PerformanceCounter("Process", "IO Write Bytes/sec", base.CurrentProcess.ProcessName);
+        this.ProcessCPUCounter = new PerformanceCounter("Process", "% Processor Time", base.CurrentProcess.ProcessName);
         UpdateNetWorkCounters();
     }
 
@@ -51,7 +54,7 @@ public class WindowsService : IMonitorService
 
     public MonitorModel GetStatus()
     {
-        var model = MonitorHelper.CreateModel();
+        var model = base.CreateModel();
         model.CpuUsage = CPUCounter.NextValue() / 100;
         model.ProcessCpuUsage = ProcessCPUCounter.NextValue() / 100 / Environment.ProcessorCount;
         model.MemoryUsage = MemoryCounter.NextValue() / 100;
@@ -66,7 +69,7 @@ public class WindowsService : IMonitorService
         using var mc = new ManagementClass("Win32_PhysicalMemory");
         foreach (ManagementObject item in mc.GetInstances())
         {
-            model.TotalMemory += long.Parse(item.Properties["Capacity"].Value.ToString()!, CultureInfo.InvariantCulture);
+            model.TotalMemory += item.Properties["Capacity"].Value.ToString()!.ToLong();
             item.Dispose();
         }
         Debug.WriteLine(model.CpuUsage.ToString("F2", CultureInfo.InvariantCulture) + "," +

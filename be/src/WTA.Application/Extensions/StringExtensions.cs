@@ -1,3 +1,5 @@
+using System.Diagnostics;
+using System.Globalization;
 using System.Text.RegularExpressions;
 
 namespace WTA.Application.Extensions;
@@ -34,6 +36,48 @@ public static class StringExtensions
     {
         var value = "Options";
         return input.EndsWith(value) ? input.Substring(0, input.Length - value.Length) : input;
+    }
+
+    public static string[] ToValues(this string input)
+    {
+        return input?.Split(' ', StringSplitOptions.RemoveEmptyEntries) ?? Array.Empty<string>();
+    }
+
+    public static int ToInt(this string value)
+    {
+        return int.Parse(value, CultureInfo.InvariantCulture);
+    }
+
+    public static long ToLong(this string value)
+    {
+        return long.Parse(value, CultureInfo.InvariantCulture);
+    }
+
+    public static string RunCommand(this string command)
+    {
+        try
+        {
+            using var process = new Process
+            {
+                StartInfo = new ProcessStartInfo
+                {
+                    CreateNoWindow = true,
+                    RedirectStandardOutput = true,
+                    RedirectStandardError = true,
+                    FileName = OperatingSystem.IsWindows() ? "cmd" : "sh",
+                    Arguments = $@"{(OperatingSystem.IsWindows() ? "/C" : "-c")} {command}",
+                },
+            };
+            process.Start();
+            var result = process.StandardOutput.ReadToEnd();
+            process.WaitForExit();
+            return result;
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine(ex.Message);
+            throw new Exception($"{nameof(RunCommand)}:{command}", ex);
+        }
     }
 
     private static void FixCasing(Span<char> chars)
