@@ -45,6 +45,6 @@ public class BaseService
             HeapSizeBytes = gcMemoryInfo.HeapSizeBytes,
             ProcessMemory = CurrentProcess.WorkingSet64
         };
-        return model;
+         return model;
     }
 }

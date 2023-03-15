@@ -38,6 +38,12 @@ public static class StringExtensions
         return input.EndsWith(value) ? input.Substring(0, input.Length - value.Length) : input;
     }
 
+    public static string TrimEndAttribute(this string input)
+    {
+        var value = "Attribute";
+        return input.EndsWith(value) ? input.Substring(0, input.Length - value.Length) : input;
+    }
+
     public static string[] ToValues(this string input)
     {
         return input?.Split(' ', StringSplitOptions.RemoveEmptyEntries) ?? Array.Empty<string>();

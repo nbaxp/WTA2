@@ -1,8 +1,8 @@
 namespace WTA.Application.Domain;
 
-public interface IGroup
+public interface IGroupAttribute
 {
-    string Name { get; }
     int DisplayOrder { get; }
     string Icon { get; }
+    string Name { get; }
 }

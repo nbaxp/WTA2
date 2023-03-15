@@ -30,6 +30,7 @@ using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using Serilog;
 using Serilog.Debugging;
+using Serilog.Settings.Configuration;
 using Swashbuckle.AspNetCore.SwaggerGen;
 using WTA.Application;
 using WTA.Application.Abstractions;
@@ -57,7 +58,7 @@ public class WebApp
         this.Name = Assembly.GetEntryAssembly()?.GetName().Name!;
 
         // AppDomain.CurrentDomain.GetAssemblies() 未被调用过的程序集不会被加载
-        var path = Path.GetDirectoryName(Assembly.GetEntryAssembly()!.Location)!;
+        var path = Path.GetDirectoryName(AppContext.BaseDirectory)!;
         var dlls = Directory.GetFiles(path, $"{nameof(WTA)}.*.dll");
         foreach (var item in dlls)
         {
@@ -153,7 +154,7 @@ public class WebApp
             builder.Host.UseSerilog((hostingContext, services, configBuilder) =>
             {
                 configBuilder
-                .ReadFrom.Configuration(hostingContext.Configuration)
+                .ReadFrom.Configuration(hostingContext.Configuration, ConfigurationAssemblySource.AlwaysScanDllFiles)
                 .Enrich.FromLogContext()
                 .WriteTo.Console(formatProvider: CultureInfo.InvariantCulture);
             }, writeToProviders: true);

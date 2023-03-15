@@ -5,20 +5,13 @@ using WTA.Application.Abstractions;
 
 namespace WTA.Application.Domain;
 
+[Query, Create, Update, Delete, Import, Export]
 public abstract class BaseEntity : IResource
 {
     public BaseEntity()
     {
         this.Id = App.Services!.CreateScope().ServiceProvider.GetService<IGuidGenerator>()!.Create();
     }
-
-    public static readonly ResourceAction List = ResourceAction.List();
-
-    public static readonly ResourceAction Create = ResourceAction.Create();
-
-    public static readonly ResourceAction Update = ResourceAction.Update();
-
-    public static readonly ResourceAction Delete = ResourceAction.Delete();
 
     [Display]
     public bool IsReadonly { get; set; }

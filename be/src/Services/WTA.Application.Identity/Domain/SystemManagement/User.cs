@@ -6,6 +6,7 @@ namespace WTA.Application.Identity.Domain.SystemManagement;
 
 [Display(Name = "用户", Order = 1)]
 [SystemManagement]
+[Action("ResetPassword")]
 public class User : BaseEntity
 {
     public int AccessFailedCount { get; set; }

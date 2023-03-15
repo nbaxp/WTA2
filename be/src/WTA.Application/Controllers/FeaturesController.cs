@@ -30,7 +30,7 @@ public class FeaturesController : Controller
 
         return Json(new
         {
-            Controllers = controllerFeature.Controllers.Select(o => o.Name + string.Join(',', o.GenericTypeArguments?.Select(o => o.Name))).ToList(),
+            Controllers = controllerFeature.Controllers.Select(o => o.Name + string.Join(',', o.GenericTypeArguments?.Select(o => o.Name)!)).ToList(),
             TagHelpers = tagHelperFeature.TagHelpers.Select(o => o.Name).ToList(),
             ViewComponents = viewComponentFeature.ViewComponents.Select(o => o.Name).ToList()
         });

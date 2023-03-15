@@ -15,7 +15,7 @@ public class GenericControllerRouteConvention : IControllerModelConvention
             var genericType = controller.ControllerType.GenericTypeArguments[0];
             var moduleName = genericType.Assembly.GetName().Name;
             var moduleGroup = moduleName?.Substring(moduleName.LastIndexOf('.') + 1);
-            var groupAttribute = genericType.GetCustomAttributes().FirstOrDefault(a => a.GetType().IsAssignableTo(typeof(IGroup))) as IGroup;
+            var groupAttribute = genericType.GetCustomAttributes().FirstOrDefault(a => a.GetType().IsAssignableTo(typeof(IGroupAttribute))) as IGroupAttribute;
             var routeTemplate = $"{moduleGroup?.ToSlugify()}/";
             if (groupAttribute != null)
             {

@@ -68,3 +68,10 @@
 ├── Resources                       # 资源文件
 ├── Startup.cs                      # 服务配置，继承自 IStartup
 ```
+
+#### WTA.Application.Identity
+
+身份认证模块
+
+权限生成规则：
+1.分组：ModuleAttribute->GroupAttribute

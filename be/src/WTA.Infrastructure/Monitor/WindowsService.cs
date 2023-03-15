@@ -72,12 +72,6 @@ public class WindowsService : BaseService, IMonitorService
             model.TotalMemory += item.Properties["Capacity"].Value.ToString()!.ToLong();
             item.Dispose();
         }
-        Debug.WriteLine(model.CpuUsage.ToString("F2", CultureInfo.InvariantCulture) + "," +
-            model.MemoryUsage.ToString("F2", CultureInfo.InvariantCulture) + "," +
-            (model.NetReceived / 1024).ToString("F2", CultureInfo.InvariantCulture) + "," +
-            (model.NetSent / 1024).ToString("F2", CultureInfo.InvariantCulture) + "," +
-            (model.DiskRead / 1024).ToString("F2", CultureInfo.InvariantCulture) + "," +
-            (model.DiskWrite / 1024).ToString("F2", CultureInfo.InvariantCulture));
         return model;
     }
 

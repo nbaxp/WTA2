@@ -11,5 +11,6 @@
   "UserName": "用户名",
   "Password": "密码",
   "Email": "邮箱",
-  "EmailConfirmed": "邮箱已确认"
+  "EmailConfirmed": "邮箱已确认",
+  "RememberMe": "记住我"
 }

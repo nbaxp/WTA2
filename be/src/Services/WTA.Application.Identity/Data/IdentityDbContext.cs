@@ -62,7 +62,7 @@ public class IdentityDbContext : IDbContext
                     Url = $"/{moduleName.ToSlugify()}/{o.Name.ToSlugify()}/index"
                 };
                 //
-                var groupAttribute = o.GetCustomAttributes().FirstOrDefault(a => a.GetType().IsAssignableTo(typeof(IGroup))) as IGroup;
+                var groupAttribute = o.GetCustomAttributes().FirstOrDefault(a => a.GetType().IsAssignableTo(typeof(IGroupAttribute))) as IGroupAttribute;
                 if (groupAttribute != null)
                 {
                     var groupMenu = rootMenu.Children.FirstOrDefault(o => o.Number == groupAttribute.Name);
