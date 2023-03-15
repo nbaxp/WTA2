@@ -9,10 +9,10 @@ namespace WTA.Application.Identity.Services.Menus;
 public class MenuService : IMenuService
 {
     private readonly IRepository<User> _userRepository;
-    private readonly IRepository<MenuItem> _menuItemRepository;
+    private readonly IRepository<Permission> _menuItemRepository;
     private readonly IDistributedCache _distributedCache;
 
-    public MenuService(IRepository<User> userRepository, IRepository<MenuItem> menuItemRepository, IDistributedCache distributedCache)
+    public MenuService(IRepository<User> userRepository, IRepository<Permission> menuItemRepository, IDistributedCache distributedCache)
     {
         this._userRepository = userRepository;
         this._menuItemRepository = menuItemRepository;
@@ -25,6 +25,6 @@ public class MenuService : IMenuService
             .AsNoTracking()
             .Where(o => o.ParentId == null)
             .OrderBy(o => o.DisplayOrder)
-            .ToList<MenuItem, MenuItemModel>();
+            .ToList<Permission, MenuItemModel>();
     }
 }

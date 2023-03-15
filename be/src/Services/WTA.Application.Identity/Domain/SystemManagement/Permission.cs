@@ -9,4 +9,7 @@ public class Permission : BaseTreeEntity<Permission>
 {
     public PermissionType Type { get; set; }
     public List<RolePermission> RolePermissions { get; set; } = new List<RolePermission>();
+    public string? Columns { get; set; }
+    public string? Url { get; set; }
+    public string? Icon { get; set; }
 }

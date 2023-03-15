@@ -1,5 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 using System.Reflection;
+using System.Text.Json;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Localization;
@@ -26,8 +27,9 @@ public class IdentityDbContext : IDbContext
         using var scope = App.Services!.CreateScope();
         var localizer = scope.ServiceProvider.GetRequiredService<IStringLocalizer>();
         //
-        var homeMenu = new MenuItem
+        var homeMenu = new Permission
         {
+            Type = PermissionType.Resource,
             Name = "首页",
             Number = "home",
             Url = "/",
@@ -35,13 +37,14 @@ public class IdentityDbContext : IDbContext
             DisplayOrder = -100
         };
         homeMenu.UpdatePath();
-        dbContext.Set<MenuItem>().Add(homeMenu);
+        dbContext.Set<Permission>().Add(homeMenu);
         App.ModuleAssemblies?.ForEach(module =>
         {
             var moduleAttribute = module.GetCustomAttribute<ModuleAttribute>();
             var moduleName = moduleAttribute!.Name;
-            var rootMenu = new MenuItem
+            var rootMenu = new Permission
             {
+                Type = PermissionType.Module,
                 Number = moduleName,
                 Name = localizer[moduleName],
                 Icon = moduleAttribute.Icon,
@@ -51,26 +54,35 @@ public class IdentityDbContext : IDbContext
             //
             module.GetTypes()
             .Where(o => !o.IsAbstract && o.IsAssignableTo(typeof(IResource)) && !o.IsAssignableTo(typeof(IAssociation)))
-            .ForEach(o =>
+            .ForEach(resourceType =>
             {
-                var displayOrder = o.GetCustomAttribute<DisplayAttribute>()?.GetOrder() ?? 0;
-                var resourceMenu = new MenuItem
+                var columns = resourceType.GetProperties()
+                .Where(o => o.PropertyType.IsValueType || o.PropertyType == typeof(string))
+                .OrderBy(o => o.GetCustomAttribute<DisplayAttribute>()?.GetOrder())
+                .Select(o => new { PropertyName = o.Name, DisplayName = o.GetDisplayName() })
+                .ToArray();
+                var displayOrder = resourceType.GetCustomAttribute<DisplayAttribute>()?.GetOrder() ?? 0;
+                var resourceMenu = new Permission
                 {
-                    Number = $"{moduleName}.{o.Name}",
-                    Name = o.GetDisplayName(),
+                    Type = PermissionType.Resource,
+                    Number = $"{rootMenu.Number}.{resourceType.Name}",
+                    Name = resourceType.GetDisplayName(),
                     DisplayOrder = displayOrder,
-                    Url = $"/{moduleName.ToSlugify()}/{o.Name.ToSlugify()}/index"
+                    Url = $"/{moduleName.ToSlugify()}/{resourceType.Name.ToSlugify()}/index",
+                    Columns = JsonSerializer.Serialize(columns)
                 };
                 //
-                var groupAttribute = o.GetCustomAttributes().FirstOrDefault(a => a.GetType().IsAssignableTo(typeof(IGroupAttribute))) as IGroupAttribute;
+                var groupAttribute = resourceType.GetCustomAttributes().FirstOrDefault(a => a.GetType().IsAssignableTo(typeof(IGroupAttribute))) as IGroupAttribute;
                 if (groupAttribute != null)
                 {
-                    var groupMenu = rootMenu.Children.FirstOrDefault(o => o.Number == groupAttribute.Name);
+                    var groupMenuNumber = $"{rootMenu.Number}.{groupAttribute.Name}";
+                    var groupMenu = rootMenu.Children.FirstOrDefault(o => o.Number == groupMenuNumber);
                     if (groupMenu == null)
                     {
-                        groupMenu = new MenuItem
+                        groupMenu = new Permission
                         {
-                            Number = groupAttribute.Name,
+                            Type = PermissionType.Resource,
+                            Number = groupMenuNumber,
                             Name = localizer[groupAttribute.Name],
                             Icon = groupAttribute.Icon,
                             DisplayOrder = groupAttribute.DisplayOrder,
@@ -79,16 +91,33 @@ public class IdentityDbContext : IDbContext
                         rootMenu.Children.Add(groupMenu);
                     }
                     groupMenu.Children.Add(resourceMenu);
-                    resourceMenu.Url = $"{groupMenu.Url}{o.Name.ToSlugify()}/index";
+                    resourceMenu.Number = $"{groupMenu.Number}.{resourceType.Name}";
+                    resourceMenu.Url = $"{groupMenu.Url}{resourceType.Name.ToSlugify()}/index";
                 }
                 else
                 {
                     rootMenu.Children.Add(resourceMenu);
                 }
+                resourceType.GetCustomAttributes(true).ForEach(attribute =>
+                {
+                    var actionAttribute = attribute as IActionAttribute;
+                    if (actionAttribute != null)
+                    {
+                        var actionMenu = new Permission
+                        {
+                            Type = PermissionType.Action,
+                            Number = $"{resourceMenu.Number}.{actionAttribute.Name}",
+                            Name = localizer[actionAttribute.Name],
+                            //Icon = actionAttribute.Icon,
+                            //DisplayOrder=actionAttribute.DisplayOrder
+                        };
+                        resourceMenu.Children.Add(actionMenu);
+                    }
+                });
             });
             //
             rootMenu.UpdatePath();
-            dbContext.Set<MenuItem>().Add(rootMenu);
+            dbContext.Set<Permission>().Add(rootMenu);
         });
         dbContext.SaveChanges();
         //

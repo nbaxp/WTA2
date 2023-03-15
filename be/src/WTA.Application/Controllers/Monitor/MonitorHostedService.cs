@@ -1,6 +1,7 @@
 using System.Diagnostics;
 using System.Net.Sockets;
 using Microsoft.AspNetCore.SignalR;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using WTA.Application.Abstractions;
@@ -49,8 +50,11 @@ public class MonitorHostedService : IHostedService
     private void DoWork()
     {
         using var scope = _serviceProvider.CreateScope();
-        var hubContext = scope.ServiceProvider.GetRequiredService<IHubContext<PageHub>>();
-        var monitorService = scope.ServiceProvider.GetRequiredService<IMonitorService>();
-        hubContext.Clients.All.SendAsync(nameof(HubExtensions.ServerToClient), "monitor", monitorService.GetStatus());
+        if (scope.ServiceProvider.GetRequiredService<IConfiguration>().GetValue("EnableMonitor", false))
+        {
+            var hubContext = scope.ServiceProvider.GetRequiredService<IHubContext<PageHub>>();
+            var monitorService = scope.ServiceProvider.GetRequiredService<IMonitorService>();
+            hubContext.Clients.All.SendAsync(nameof(HubExtensions.ServerToClient), "monitor", monitorService.GetStatus());
+        }
     }
 }

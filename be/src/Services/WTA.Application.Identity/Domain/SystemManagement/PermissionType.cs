@@ -4,12 +4,15 @@ namespace WTA.Application.Identity.Domain.SystemManagement;
 
 public enum PermissionType
 {
+    [Display(Name = "模块")]
+    Module = 10,
+
     [Display(Name = "分组")]
-    Group,
+    Group = 20,
 
     [Display(Name = "资源")]
-    Resource,
+    Resource = 30,
 
-    [Display(Name = "权限")]
-    Permission
+    [Display(Name = "操作")]
+    Action = 40
 }
