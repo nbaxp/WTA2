@@ -29,19 +29,25 @@ const request = axios.create(globalConfig);
 
 request.interceptors.request.use(
   function (config) {
-    log.debug(`request:[${config.method}][${config.baseURL}${config.url}]`);
+    console.log(`request:[${config.method}][${config.baseURL}${config.url}]`);
     if (config.params) {
-      log.debug(JSON.parse(JSON.stringify(config.params)));
+      console.log(JSON.parse(JSON.stringify(config.params)));
     }
     if (config.data) {
-      log.debug(JSON.parse(JSON.stringify(config.data)));
+      console.log(JSON.parse(JSON.stringify(config.data)));
     }
+    if (!Object.prototype.hasOwnProperty.call(config, 'headers')) {
+      Object.assign(config, { headers: {} });
+    }
+    Object.assign(config.headers, {
+      'Content-Type': 'application/json',
+      Accept: 'application/json',
+    });
     const token = localStorage.getItem('token');
     if (token) {
-      if (!Object.prototype.hasOwnProperty.call(config, 'headers')) {
-        Object.assign(config, { headers: {} });
-      }
-      Object.assign(config.headers, { Authorization: `Bearer ${token}` });
+      Object.assign(config.headers, {
+        Authorization: `Bearer ${token}`,
+      });
     }
     return config;
   },
@@ -60,11 +66,11 @@ request.interceptors.request.use(
 request.interceptors.response.use(
   function (response) {
     const { config } = response;
-    log.debug(`response:[${response.status}][${config.method}][${config.baseURL}${config.url}]`);
+    console.log(`response:[${response.status}][${config.method}][${config.baseURL}${config.url}]`);
     if (response.data) {
       const result = response.data;
       const successCode = 200; // or may be zero
-      if ('code' in result && result.code !== successCode) {
+      if (typeof result === 'object' && 'code' in result && result.code !== successCode) {
         const message = `code ${result.code} : ${result.message ?? getErrorMessageByCode(result.code)}`;
         ElMessage.error(message);
         throw new Error(message);
@@ -85,3 +91,4 @@ request.interceptors.response.use(
 );
 
 export default request;
+export { globalConfig };

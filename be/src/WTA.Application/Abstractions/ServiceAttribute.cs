@@ -2,7 +2,7 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace WTA.Application.Abstractions;
 
-[AttributeUsage(AttributeTargets.Class)]
+[AttributeUsage(AttributeTargets.Class, AllowMultiple = true)]
 public class ServiceAttribute<T> : Attribute, IServiceAttribute
 {
     /// <summary>

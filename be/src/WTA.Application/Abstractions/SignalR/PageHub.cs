@@ -8,6 +8,8 @@ public class PageHub : Hub
 {
     private readonly ILogger<PageHub> _logger;
     private readonly IEventPublisher _eventPublisher;
+    private readonly object balanceLock = new object();
+    public static long Count { get; private set; }
 
     public PageHub(ILogger<PageHub> logger, IEventPublisher eventPublisher)
     {
@@ -17,20 +19,28 @@ public class PageHub : Hub
 
     public override Task OnConnectedAsync()
     {
-        this._logger.LogInformation($"{Context.ConnectionId} has connected: {Context.GetHttpContext()?.Request.QueryString}");
+        var userName = Context.GetHttpContext()?.User.Identity?.Name;
+        this._logger.LogInformation($"{Context.ConnectionId} has connected: {userName}");
         this.Groups.AddToGroupAsync(Context.ConnectionId, Context.ConnectionId);
-        var group = Context.GetHttpContext()?.User.Identity?.Name;
-        if (!string.IsNullOrEmpty(group))
+        if (!string.IsNullOrEmpty(userName))
         {
-            this.Groups.AddToGroupAsync(Context.ConnectionId, group);
+            this.Groups.AddToGroupAsync(Context.ConnectionId, userName);
         }
         this.Clients.Group(Context.ConnectionId).SendAsync("Connected", Context.ConnectionId);
+        lock (balanceLock)
+        {
+            Count++;
+        }
         return base.OnConnectedAsync();
     }
 
     public override Task OnDisconnectedAsync(Exception? exception)
     {
         this._logger.LogInformation($"{Context.ConnectionId} has disconnected: {exception}");
+        lock (balanceLock)
+        {
+            Count--;
+        }
         return base.OnDisconnectedAsync(exception);
     }
 

@@ -1,0 +1,283 @@
+﻿@using WTA.Application.Extensions
+@inject IStringLocalizer localizer
+@{
+    var action = Url.Action();
+}
+@section scripts{
+    <template id="page">
+        <el-row :gutter="20" style="margin-bottom:20px;">
+            <el-col :span="24">
+                <el-card class="box-card">
+                    <template #header>
+                        <div class="card-header">
+                            <span>操作系统</span>
+                        </div>
+                    </template>
+                    <el-descriptions border direction="vertical" :column="8">
+                        <el-descriptions-item label="架构">{{model.osArchitecture}}</el-descriptions-item>
+                        <el-descriptions-item label="名称">{{model.osDescription}}</el-descriptions-item>
+                        <el-descriptions-item label="主机">{{model.hostName}}</el-descriptions-item>
+                        <el-descriptions-item label="用户">{{model.userName}}</el-descriptions-item>
+                        <el-descriptions-item label="时间">{{dayjs(model.serverTime).format()}}</el-descriptions-item>
+                        <el-descriptions-item label="地址">{{model.hostAddresses}}</el-descriptions-item>
+                        <el-descriptions-item label="进程">{{model.processCount}}</el-descriptions-item>
+                        <el-descriptions-item label="线程">{{model.threadCount}}</el-descriptions-item>
+                    </el-descriptions>
+                </el-card>
+            </el-col>
+        </el-row>
+        <el-row :gutter="20" style="margin-bottom:20px;">
+            <el-col :span="12">
+                <el-card class="box-card">
+                    <template #header>
+                        <div class="card-header">
+                            <span>处理器 {{model.processorCount}} </span>
+                        </div>
+                    </template>
+                    <chart :option="cpuModel" :height="chartHeight" />
+                </el-card>
+            </el-col>
+            <el-col :span="12">
+                <el-card class="box-card">
+                    <template #header>
+                        <div class="card-header">
+                            <span>内存 {{bytesFormat(model.totalMemory)}}</span>
+                        </div>
+                    </template>
+                    <chart :option="memoryModel" :height="chartHeight" />
+                </el-card>
+            </el-col>
+        </el-row>
+        <el-row :gutter="20" style="margin-bottom:20px;">
+            <el-col :span="12">
+                <el-card class="box-card">
+                    <template #header>
+                        <div class="card-header">
+                            <span>磁盘</span>
+                        </div>
+                    </template>
+                    <chart :option="diskModel" :height="chartHeight" />
+                </el-card>
+            </el-col>
+            <el-col :span="12">
+                <el-card class="box-card">
+                    <template #header>
+                        <div class="card-header">
+                            <span>网络</span>
+                        </div>
+                    </template>
+                    <chart :option="netModel" :height="chartHeight" />
+                </el-card>
+            </el-col>
+        </el-row>
+        <el-row :gutter="20" style="margin-bottom:20px;">
+            <el-col :span="24">
+                <el-card class="box-card">
+                    <template #header>
+                        <div class="card-header">
+                            <span>.NET</span>
+                        </div>
+                    </template>
+                    <el-descriptions border direction="vertical" :column="4">
+                        <el-descriptions-item label="名称">{{model.frameworkDescription}}</el-descriptions-item>
+                        <el-descriptions-item label="已分配内存">{{bytesFormat(model.gcTotalMemory)}}</el-descriptions-item>
+                        <el-descriptions-item label="可回收对象">{{model.finalizationPendingCount}}</el-descriptions-item>
+                        <el-descriptions-item label="堆大小">{{bytesFormat(model.heapSizeBytes)}}</el-descriptions-item>
+                    </el-descriptions>
+                </el-card>
+            </el-col>
+        </el-row>
+        <el-row :gutter="20" style="margin-bottom:20px;">
+            <el-col :span="24">
+                <el-card class="box-card">
+                    <template #header>
+                        <div class="card-header">
+                            <span>应用</span>
+                        </div>
+                    </template>
+                    <el-descriptions border direction="vertical" :column="4">
+                        <el-descriptions-item label="架构">{{model.processArchitecture}}</el-descriptions-item>
+                        <el-descriptions-item label="启动时间">{{dayjs(model.processStartTime).format()}}</el-descriptions-item>
+                        <el-descriptions-item label="启动位置">{{model.processFileName}}</el-descriptions-item>
+                        <el-descriptions-item label="参数">{{model.processArguments}}</el-descriptions-item>
+                        <el-descriptions-item label="进程Id">{{model.processId}}</el-descriptions-item>
+                        <el-descriptions-item label="进程名称">{{model.processName}}</el-descriptions-item>
+                        <el-descriptions-item label="CPU">{{persentFormat(model.processCpuUsage)}}</el-descriptions-item>
+                        <el-descriptions-item label="内存">{{bytesFormat(model.processMemory)}}</el-descriptions-item>
+                        <el-descriptions-item label="磁盘读写">{{bytesFormat(model.processDiskRead)}} / {{bytesFormat(model.processDiskWrite)}}</el-descriptions-item>
+                        <el-descriptions-item label="线程">{{model.processThreadCount}}</el-descriptions-item>
+                        <el-descriptions-item label="句柄数">{{model.handleCount}}</el-descriptions-item>
+                        <el-descriptions-item label="在线用户">{{model.onlineUsers}}</el-descriptions-item>
+                    </el-descriptions>
+                </el-card>
+            </el-col>
+        </el-row>
+    </template>
+    <script type="module">
+        import { ref, reactive, onMounted, onUnmounted } from 'vue';
+        import { ElMessage } from 'element-plus';
+        import request from 'request';
+        import { useAppStore } from './src/store/index.js';
+        import Chart from './src/components/chart.js';
+        import { persentFormat, bytesFormat } from './src/utils/index.js';
+
+        window.page = {
+            components: { Chart },
+            template: '#page',
+            setup() {
+                const url = ref('@action');
+                var model = reactive(@Json.Serialize(Model));
+                var schema = reactive(@Json.Serialize(ViewData.ModelMetadata.GetSchema(ViewContext.HttpContext.RequestServices)));
+
+                const cpuModel = reactive({
+                    title: {
+                        text: '处理器',
+                    },
+                    xAxis: {
+                        type: 'time',
+                    },
+                    yAxis: {
+                        type: 'value',
+                        min: 0,
+                        max: 100
+                    },
+                    series: [
+                        {
+                            data: [],
+                            type: 'line',
+                        },
+                    ],
+                });
+
+                const memoryModel = reactive({
+                    title: {
+                        text: '内存',
+                    },
+                    xAxis: {
+                        type: 'time',
+                    },
+                    yAxis: {
+                        type: 'value',
+                        min: 0,
+                        max: 100
+                    },
+                    series: [
+                        {
+                            data: [],
+                            type: 'line',
+                            smooth: true,
+                            areaStyle: {}
+                        },
+                    ],
+                });
+
+                const diskModel = reactive({
+                    title: {
+                        text: '磁盘',
+                    },
+                    legend: {
+                        data: ['Read', 'Write']
+                    },
+                    xAxis: {
+                        type: 'time',
+                    },
+                    yAxis: {
+                        type: 'value',
+                    },
+                    series: [
+                        {
+                            name: 'Read',
+                            data: [],
+                            type: 'line',
+                            smooth: true
+                        }, {
+                            name: 'Write',
+                            data: [],
+                            type: 'line',
+                            smooth: true
+                        },
+                    ],
+                });
+
+                const netModel = reactive({
+                    title: {
+                        text: '网络',
+                    },
+                    legend: {
+                        data: ['Download', 'Upload']
+                    },
+                    xAxis: {
+                        type: 'time',
+                    },
+                    yAxis: {
+                        type: 'value',
+                    },
+                    series: [
+                        {
+                            name: 'Download',
+                            data: [],
+                            type: 'line',
+                            smooth: true
+                        },
+                        {
+                            name: 'Upload',
+                            data: [],
+                            type: 'line',
+                            smooth: true
+                        },
+                    ],
+                });
+
+                onMounted(() => {
+                    PubSub.subscribe('monitor', (method, data) => {
+                        Object.assign(model, data.message);
+                        // cpu
+                        if (cpuModel.series[0].data.length > 30) {
+                            cpuModel.series[0].data.shift();
+                            cpuModel.xAxis.data.shift();
+                        }
+                        cpuModel.title.text = `处理器 ${persentFormat(model.cpuUsage)}`;
+                        cpuModel.series[0].data.push([new Date(), model.cpuUsage * 100]);
+                        // memory
+                        if (memoryModel.series[0].data.length > 30) {
+                            memoryModel.series[0].data.shift();
+                        }
+                        memoryModel.title.text = `内存 ${persentFormat(model.memoryUsage)}`;
+                        memoryModel.series[0].data.push([new Date(), model.memoryUsage * 100]);
+                        // disk
+                        if (diskModel.series[0].data.length > 30) {
+                            diskModel.series[0].data.shift();
+                            diskModel.series[1].data.shift();
+                        }
+                        diskModel.title.text = `磁盘 ${bytesFormat(model.diskRead)} / ${bytesFormat(model.diskWrite)}`;
+                        diskModel.series[0].data.push([new Date(), model.diskRead]);
+                        diskModel.series[1].data.push([new Date(), model.diskWrite]);
+                        // net
+                        if (netModel.series[0].data.length > 30) {
+                            netModel.series[0].data.shift();
+                            netModel.series[10].data.shift();
+                        }
+                        netModel.title.text = `网络 ${bytesFormat(model.netReceived)} / ${bytesFormat(model.netSent)}`;
+                        netModel.series[0].data.push([new Date(), model.netReceived]);
+                        netModel.series[1].data.push([new Date(), model.netSent]);
+                    });
+                });
+                onUnmounted(() => {
+                    console.log('onUnmounted');
+                });
+                return {
+                    model,
+                    chartHeight: '250px',
+                    cpuModel,
+                    memoryModel,
+                    diskModel,
+                    netModel,
+                    schema,
+                    dayjs,
+                    persentFormat,
+                    bytesFormat
+                }
+            }
+        };
+    </script>
+}

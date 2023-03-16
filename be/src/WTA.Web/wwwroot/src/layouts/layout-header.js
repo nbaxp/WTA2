@@ -1,4 +1,5 @@
 import html from '../utils/index.js';
+import request from '../request/index.js';
 import { ref, reactive } from 'vue';
 import { ElMessage, ElMessageBox } from 'element-plus';
 import SvgIcon from '../components/svg-icon.js';
@@ -11,9 +12,8 @@ const template = html` <div class="d-flex justify-content-between align-items-ce
     <div class="d-flex justify-content-between align-items-center h-100">
       <header-logo :has-aside="hasAside" />
       <el-space
-        class="h-100"
+        class="h-100 center"
         v-if="hasAside"
-        class="center"
       >
         <el-icon
           :size="18"
@@ -36,11 +36,11 @@ const template = html` <div class="d-flex justify-content-between align-items-ce
         <template v-if="appStore.user.isAuthenticated">
           <el-dropdown class="cursor-pointer">
             <el-space>
-              <el-icon :size="18"
+              <!-- <el-icon :size="18"
                 ><img
                   :src="userStore.avatar"
                   class="h-full"
-              /></el-icon>
+              /></el-icon> -->
               <span>{{ appStore.user.name }}</span>
               <el-icon>
                 <ep-arrow-down />
@@ -138,12 +138,6 @@ export default {
     const appStore = useAppStore();
 
     const toggleMenu = () => (appStore.menuCollapse = !appStore.menuCollapse);
-    // const onRoleChange = (command) => {
-    //   userStore.currentRole = command;
-    //   if (currentRoute.meta?.requiresAuth && !userStore.hasPermission(currentRoute.meta?.permission)) {
-    //     router.push('/403');
-    //   }
-    // };
 
     const showSettings = ref(false);
     const toggleSettings = () => {
@@ -153,6 +147,9 @@ export default {
     const confirmLogout = async () => {
       try {
         await ElMessageBox.confirm('确认退出？', '提示', { type: 'warning' });
+        const config = { url: 'identity/account/logout', method: 'post' };
+        const response = await request.request(config);
+        localStorage.removeItem('token');
         window.location = appStore.basePath;
       } catch (error) {
         console.log(error);

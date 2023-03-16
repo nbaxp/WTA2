@@ -4,9 +4,11 @@ import { createI18n } from 'vue-i18n';
 import ElementPlus from 'element-plus';
 import * as ElementPlusIconsVue from '@element-plus/icons-vue';
 import store, { useAppStore } from './store/index.js';
+import { globalConfig } from './request/index.js';
 import App from './app.js';
 
 export default function (config) {
+  globalConfig.baseURL = config.basePath;
   const root = {
     components: { App, AppLayout: config.page.layout ?? config.layout, AppPage: config.page },
     template: html` <app>
@@ -18,7 +20,7 @@ export default function (config) {
   //dayjs
   dayjs.locale(window.dayjs_locale_zh_cn);
   //signalr
-  const connection = new signalR.HubConnectionBuilder().withUrl(`${config.basePath}hub`).build();
+  const connection = new signalR.HubConnectionBuilder().withUrl(`${globalConfig.baseURL}hub`).build();
   const connect = () => {
     if (connection.state === signalR.HubConnectionState.Disconnected) {
       connection
@@ -42,7 +44,9 @@ export default function (config) {
   connection.on('ServerToClient', function (method, message, to, from) {
     PubSub.publish(method, { message: message, to: to, from: from });
   });
-  connect();
+  if (config.user.isAuthenticated) {
+    connect();
+  }
   // create app
   const app = createApp(root);
   // use store

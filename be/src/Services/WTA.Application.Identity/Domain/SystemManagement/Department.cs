@@ -7,4 +7,5 @@ namespace WTA.Application.Identity.Domain.SystemManagement;
 [SystemManagement]
 public class Department : BaseTreeEntity<Department>
 {
+    public List<UserDepartment> UserDepartments { get; set; } = new List<UserDepartment>();
 }

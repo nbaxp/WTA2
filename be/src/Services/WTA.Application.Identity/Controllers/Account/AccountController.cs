@@ -11,7 +11,7 @@ using WTA.Application.Extensions;
 using WTA.Application.Identity.Controllers;
 using WTA.Application.Identity.Domain.SystemManagement;
 
-namespace WTA.Application.Identity.Services.Account;
+namespace WTA.Application.Identity.Controllers.Account;
 
 [Authorize]
 public class AccountController : BaseController
@@ -60,6 +60,18 @@ public class AccountController : BaseController
                 var result = this.ValidateUser(model);
                 if (result.Status == ValidateUserStatus.Successful)
                 {
+                    var key = nameof(OAuth2TokenResult.AccessToken).ToUnderline();
+                    var accessTokenForCookie = this._tokenService.CreatAccessTokenForCookie(model.UserName, model.RememberMe, out var timeout);
+                    var cookieOptions = new CookieOptions
+                    {
+                        HttpOnly = true,
+                        Expires = DateTimeOffset.Now.Add(timeout)
+                    };
+                    if (Request.Cookies.Keys.Contains(key))
+                    {
+                        Response.Cookies.Delete(key);
+                    }
+                    Response.Cookies.Append(key, accessTokenForCookie);
                     if (this.Request.IsJsonRequest())
                     {
                         var tokenResult = this._tokenService.CreateAuth2TokenResult(model.UserName, model.RememberMe);
@@ -67,18 +79,6 @@ public class AccountController : BaseController
                     }
                     else
                     {
-                        var key = nameof(OAuth2TokenResult.AccessToken).ToSlugify();
-                        var accessTokenForCookie = this._tokenService.CreatAccessTokenForCookie(model.UserName, model.RememberMe, out var timeout);
-                        var cookieOptions = new CookieOptions
-                        {
-                            HttpOnly = true,
-                            Expires = DateTimeOffset.Now.Add(timeout)
-                        };
-                        if (Request.Cookies.Keys.Contains(key))
-                        {
-                            Response.Cookies.Delete(key);
-                        }
-                        Response.Cookies.Append(key, accessTokenForCookie);
                         if (!string.IsNullOrEmpty(model.ReturnUrl) && Url.IsLocalUrl(model.ReturnUrl))
                         {
                             return Redirect(model.ReturnUrl);
@@ -90,7 +90,6 @@ public class AccountController : BaseController
                     }
                 }
                 ModelState.AddModelError("", _localizer[result.Status.ToString()]);
-                return this.Result(model);
             }
             return BadRequest(ModelState.ToErrors());
         }
@@ -167,7 +166,7 @@ public class AccountController : BaseController
     [HttpPost]
     public IActionResult Logout()
     {
-        var key = nameof(OAuth2TokenResult.AccessToken).ToSlugify();
+        var key = nameof(OAuth2TokenResult.AccessToken).ToUnderline();
         Response.Cookies.Delete(key);
         return Ok(true);
     }

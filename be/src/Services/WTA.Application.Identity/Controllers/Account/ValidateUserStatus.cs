@@ -1,4 +1,4 @@
-namespace WTA.Application.Identity.Services.Account;
+namespace WTA.Application.Identity.Controllers.Account;
 
 public enum ValidateUserStatus
 {

@@ -1,5 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
-using WTA.Application.Identity.Services.Account;
+using WTA.Application.Identity.Controllers.Account;
 
 namespace WTA.Application.BaseData.Controllers;
 

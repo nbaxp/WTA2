@@ -105,4 +105,9 @@ public class MonitorModel
 
     [Display]
     public string UserName { get; set; } = null!;
+
+    [Display]
+    public long OnlineUsers { get; set; }
+    [Display]
+    public int HandleCount { get; set; }
 }

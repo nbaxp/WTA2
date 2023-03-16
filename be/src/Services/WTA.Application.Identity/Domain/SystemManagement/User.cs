@@ -45,5 +45,6 @@ public class User : BaseEntity
     [ReadOnly(true)]
     public string? UserName { get; set; }
 
+    public List<UserDepartment> UserDepartments { get; set; } = new List<UserDepartment>();
     public List<UserRole> UserRoles { get; set; } = new List<UserRole>();
 }

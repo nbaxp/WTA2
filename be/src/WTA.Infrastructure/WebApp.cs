@@ -205,14 +205,13 @@ public class WebApp
             .Where(type => type.GetCustomAttributes(typeof(ServiceAttribute<>)).Any())
             .ForEach(type =>
             {
-                if (type.GetCustomAttribute(typeof(ServiceAttribute<>)) is IServiceAttribute implementation)
+                foreach (var implementation in type.GetCustomAttributes(typeof(ServiceAttribute<>)).Select(o => (o as IServiceAttribute)!))
                 {
                     var currentPlatformType = (PlatformType)Enum.Parse(typeof(PlatformType), this.OSPlatformName);
                     if (implementation.PlatformType.HasFlag(currentPlatformType))
                     {
                         if (implementation.ServiceType.IsAssignableTo(typeof(IHostedService)))
                         {
-                            // builder.Services.AddHostedService()ServiceCollectionHostedServiceExtensions
                             var method = typeof(ServiceCollectionHostedServiceExtensions)
                             .GetMethod(nameof(ServiceCollectionHostedServiceExtensions.AddHostedService),
                             new[] { typeof(IServiceCollection) });
@@ -281,7 +280,7 @@ public class WebApp
             {
                 OnMessageReceived = context =>
                 {
-                    if (!context.Request.IsJsonRequest() && context.Request.Cookies.TryGetValue("access_key", out var token))
+                    if (!context.Request.IsJsonRequest() && context.Request.Cookies.TryGetValue("access_token", out var token))
                     {
                         context.Token = token;
                     }

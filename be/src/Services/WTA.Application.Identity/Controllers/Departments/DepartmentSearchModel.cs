@@ -1,4 +1,4 @@
-namespace WTA.Application.Identity.Services.Departments;
+namespace WTA.Application.Identity.Controllers.Departments;
 
 public class DepartmentSearchModel
 {

@@ -5,7 +5,7 @@ const settings = {
   locale: 'zh',
   //
   version: '0.1.0',
-  basePath: '/',
+  // basePath: '/',
   // locale: {
   //   current: 'zh',
   //   default: 'zh',

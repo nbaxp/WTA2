@@ -8,6 +8,8 @@ using Microsoft.AspNetCore.Mvc.ModelBinding.Metadata;
 using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Localization;
+using WTA.Application.Abstractions.Controllers;
+using WTA.Application.Application;
 
 namespace WTA.Application.Extensions;
 
@@ -32,13 +34,38 @@ public static class TypeExtensions
     {
         var modelType = meta.UnderlyingOrModelType;
         var title = meta.ContainerType == null ? modelType.GetDisplayName() : meta.GetDisplayName();
+        if (modelType.IsGenericType &&
+            modelType.GetGenericArguments()[0].IsGenericType &&
+            modelType.GetGenericArguments()[0].GetGenericTypeDefinition() == typeof(PaginationModel<,>))
+        {
+            var genericType = modelType.GenericTypeArguments[0].GetGenericArguments()[0];
+            var modelAttribute = genericType.GetCustomAttributes().FirstOrDefault(a => a.GetType().IsAssignableTo(typeof(IModelAttribute))) as IModelAttribute;
+
+            if (modelAttribute != null)
+            {
+                title = modelAttribute.EntityType.GetDisplayName();
+            }
+            else
+            {
+                title = genericType.GetDisplayName();
+            }
+        }
+        var showForDisplay = meta.ShowForDisplay;
+        if (meta is DefaultModelMetadata defaultMeta)
+        {
+            var attribute = defaultMeta.Attributes.PropertyAttributes?.FirstOrDefault(o => o.GetType() == typeof(HiddenInputAttribute));
+            if (attribute != null)
+            {
+                showForDisplay = (attribute as HiddenInputAttribute)!.DisplayValue;
+            }
+        }
         var schema = new Dictionary<string, object>
         {
           { "title",title },
           { "description", meta.Description! },
           { "format", meta.DataTypeName?.ToLowerCamelCase()! },
           { "template", meta.TemplateHint?.ToLowerCamelCase()! },
-          { nameof(meta.ShowForDisplay), meta.ShowForDisplay },
+          { nameof(meta.ShowForDisplay), showForDisplay },
           { nameof(meta.ShowForEdit), meta.ShowForEdit },
           { nameof(meta.IsReadOnly), meta.IsReadOnly }
         };
@@ -184,8 +211,8 @@ public static class TypeExtensions
                 else if (attribute is RangeAttribute range)
                 {
                     rule.Add("type", "number");
-                    rule.Add("min", range.Minimum is int ? (int)range.Minimum : (double)range.Minimum);
-                    rule.Add("max", range.Maximum is int ? (int)range.Maximum : (double)range.Maximum);
+                    rule.Add("min", range.Minimum is int minInt ? minInt : (double)range.Minimum);
+                    rule.Add("max", range.Maximum is int maxInt ? maxInt : (double)range.Maximum);
                 }
                 else if (attribute is EmailAddressAttribute)
                 {

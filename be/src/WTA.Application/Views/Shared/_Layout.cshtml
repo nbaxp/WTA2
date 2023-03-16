@@ -4,7 +4,7 @@
 @inject WTA.Application.Abstractions.IMenuService menuService
 @{
     var basePath = ViewContext.HttpContext.Request.PathBase.HasValue ? ViewContext.HttpContext.Request.PathBase.Value : "/";
-    if(basePath!="/"&&!basePath!.EndsWith("/"))
+    if (basePath != "/" && !basePath!.EndsWith("/"))
     {
         basePath += "/";
     }
@@ -15,7 +15,7 @@
     var localeItems = requestLocalizationOptions.Value.SupportedCultures!.Select(o => new { o.Name, o.NativeName });
     var isAuthenticated = User.Identity!.IsAuthenticated;
     var userName = User.Identity.Name;
-    var menus = menuService.GetMenus();
+    var menus = menuService.GetPermissions();
     var action = this.ViewContext.HttpContext.Request.Path;
 }
 <!DOCTYPE html>
@@ -57,6 +57,7 @@
     <script>
         window.process = { env: { NODE_ENV: 'production' } };
     </script>
+    <script src="./libs/lodash/lodash.min.js"></script>
     <script src="./libs/dayjs/dayjs.min.js"></script>
     <script src="./libs/dayjs/locale/zh-cn.js"></script>
     <script src="./libs/pubsub-js/pubsub.min.js"></script>
@@ -80,8 +81,8 @@
                 isAuthenticated: @Json.Serialize(isAuthenticated),
                 name: '@userName'
             },
-            action:'@action',
-            menus: @Json.Serialize(menus)
+            action: '@action',
+            menus: (@Json.Serialize(menus))
         };
         init(config);
     </script>

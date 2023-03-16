@@ -2,6 +2,7 @@ using System.Diagnostics;
 using System.Net;
 using System.Net.Sockets;
 using System.Runtime.InteropServices;
+using WTA.Application.Abstractions.SignalR;
 using WTA.Application.Services.Monitor;
 
 namespace WTA.Infrastructure.Monitor;
@@ -43,8 +44,10 @@ public class BaseService
             GCTotalMemory = GC.GetTotalMemory(false),
             FinalizationPendingCount = gcMemoryInfo.FinalizationPendingCount,
             HeapSizeBytes = gcMemoryInfo.HeapSizeBytes,
-            ProcessMemory = CurrentProcess.WorkingSet64
+            ProcessMemory = CurrentProcess.WorkingSet64,
+            OnlineUsers= PageHub.Count,
+            HandleCount = CurrentProcess.HandleCount
         };
-         return model;
+         return model;//CurrentProcess.Threads.h
     }
 }

@@ -1,7 +1,7 @@
 using WTA.Application.Abstractions.Token;
 using WTA.Application.Identity.Domain.SystemManagement;
 
-namespace WTA.Application.Identity.Services.Account;
+namespace WTA.Application.Identity.Controllers.Account;
 
 public class ValidateUserResult
 {

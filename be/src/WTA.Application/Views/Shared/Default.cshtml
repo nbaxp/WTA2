@@ -5,10 +5,10 @@
 }
 @section scripts{
     <template id="page">
-        <app-form ref="formRef" v-model="model" mode="create"></app-form>
+        <app-form ref="appFormRef" v-model="model" mode="create" @@after="after"></app-form>
     </template>
     <script type="module">
-        import { ref, reactive } from 'vue';
+        import { ref, reactive, onMounted } from 'vue';
         import { ElMessage } from 'element-plus';
         import request from 'request';
         import appForm from './src/components/form/app-form.js';
@@ -18,38 +18,24 @@
             components: { appForm },
             template: '#page',
             setup() {
-                //const appStore = useAppStore();
+                const appStore = useAppStore();
                 const model = reactive({
                     url: '@action',
-                    data: @Json.Serialize(Model),
-                    errors: @Json.Serialize(ViewData.ModelState.ToErrors()),
-                    schema: @Json.Serialize(ViewData.ModelMetadata.GetSchema(ViewContext.HttpContext.RequestServices))
+                    data: (@Json.Serialize(Model)),
+                    errors: (@Json.Serialize(ViewData.ModelState.ToErrors())),
+                    schema: (@Json.Serialize(ViewData.ModelMetadata.GetSchema(ViewContext.HttpContext.RequestServices)))
                 });
-
-                const submit = async () => {
-                    //var options = {
-                    //    method: 'post',
-                    //    credentials: 'include',
-                    //    headers: {
-                    //        'Content-Type': 'application/json',
-                    //        'Accept': 'application/json'
-                    //    },
-                    //    body: JSON.stringify(model);
-                    //};
-                    try {
-                        await formRef.value.validate();
-                        ElMessage.success('验证成功');
-                        console.log('data:');
-                        console.log(model.data);
-                        //fetch(url, options);
-                    } catch (error) {
-                        console.error(error);
-                        ElMessage.error('验证失败');
-                    }
+                const appFormRef = ref(null);
+                const after = async (result) => {
+                    console.log(result);
+                    const { access_token } = result;
+                    localStorage.setItem("token", access_token);
+                    window.location = model.data.returnUrl;
                 };
 
                 return {
-                    model
+                    model,
+                    after
                 }
             }
         };
