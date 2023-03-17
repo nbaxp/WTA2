@@ -23,7 +23,7 @@ const template = html`<template v-for="item in model">
     <el-menu-item
       v-else
       :key="item.id"
-      :index="item.url"
+      :index="getUrl(item)"
       @click="redirect(item)"
     >
       <el-icon><svg-icon :name="item.icon??'page'" /></el-icon>
@@ -55,12 +55,16 @@ export default {
         .orderBy((o) => o.displayOrder)
         .toArray(),
     );
+    const getUrl = (item) => {
+      return (props.parentPath ? props.parentPath + '/' + item.path : item.path) + '/index';
+    };
     const redirect = (item) => {
-      const path = (props.parentPath ? props.parentPath + '/' + item.path : item.path) + '/index';
-      window.location.href = appStore.basePath === '/' ? path : `${appStore.basePath}${path}`;
+      const url = getUrl(item);
+      window.location.href = appStore.basePath === '/' ? url : `${appStore.basePath}${url}`;
     };
     return {
       model,
+      getUrl,
       redirect,
     };
   },
