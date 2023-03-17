@@ -46,7 +46,7 @@ export default {
     const appStore = useAppStore();
     const menus = computed(() => {
       return Enumerable.from(appStore.menus)
-        .orderBy((o) => o.url.length)
+        .orderBy((o) => o.displayOrder)
         .toArray();
     });
     return { appStore, menus };

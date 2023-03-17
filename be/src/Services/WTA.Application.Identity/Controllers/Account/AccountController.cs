@@ -2,13 +2,14 @@ using System.Text.Json;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Localization;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using WTA.Application.Abstractions;
 using WTA.Application.Abstractions.Json;
 using WTA.Application.Abstractions.Token;
 using WTA.Application.Extensions;
-using WTA.Application.Identity.Controllers;
 using WTA.Application.Identity.Domain.SystemManagement;
 
 namespace WTA.Application.Identity.Controllers.Account;
@@ -16,23 +17,29 @@ namespace WTA.Application.Identity.Controllers.Account;
 [Authorize]
 public class AccountController : BaseController
 {
-    private readonly IStringLocalizer _localizer;
-    private readonly IRepository<User> _userRepository;
-    private readonly IPasswordHasher _passwordHasher;
     private readonly IdentityOptions _identityOptions;
+    private readonly ILogger<AccountController> _logger;
+    private readonly IStringLocalizer _localizer;
+    private readonly IPasswordHasher _passwordHasher;
     private readonly ITokenService _tokenService;
+    private readonly IRepository<User> _userRepository;
+    private readonly IRepository<Permission> _permissionRepository;
 
-    public AccountController(IStringLocalizer localizer,
-        IRepository<User> userRepository,
+    public AccountController(ILogger<AccountController> logger,
+        IStringLocalizer localizer,
         IPasswordHasher passwordHasher,
         IOptions<IdentityOptions> identityOptions,
-        ITokenService tokenService)
+        ITokenService tokenService,
+        IRepository<User> userRepository,
+        IRepository<Permission> permissionRepository)
     {
+        this._logger = logger;
         this._localizer = localizer;
-        this._userRepository = userRepository;
         this._passwordHasher = passwordHasher;
         this._identityOptions = identityOptions.Value;
         this._tokenService = tokenService;
+        this._userRepository = userRepository;
+        this._permissionRepository = permissionRepository;
     }
 
     [HttpGet]
@@ -40,6 +47,8 @@ public class AccountController : BaseController
     {
         return View();
     }
+
+    #region Login/Logout
 
     [HttpGet]
     [AllowAnonymous]
@@ -99,8 +108,56 @@ public class AccountController : BaseController
         }
     }
 
-    [NonAction]
-    public ValidateUserResult ValidateUser(LoginModel model)
+    [HttpPost]
+    public IActionResult Logout()
+    {
+        var key = nameof(OAuth2TokenResult.AccessToken).ToUnderline();
+        Response.Cookies.Delete(key);
+        return Ok(true);
+    }
+
+    #endregion Login/Logout
+
+    [HttpPost]
+    public IActionResult GetUserInfo()
+    {
+        try
+        {
+            var user = this._userRepository
+                .AsNoTracking()
+                .Include(o => o.UserRoles)
+                .ThenInclude(o => o.Role)
+                .ThenInclude(o => o.RolePermissions)
+                .ThenInclude(o => o.Permission)
+                .Where(o => o.UserName == User.Identity!.Name);
+            return Ok(user);
+        }
+        catch (Exception ex)
+        {
+            this._logger.LogError(ex, ex.Message);
+            return Problem(ex.Message);
+        }
+    }
+
+    [HttpPost]
+    public IActionResult GetMenus()
+    {
+        try
+        {
+            var permissions = this._permissionRepository
+                .AsNoTracking()
+                .ToList()
+                .Select(o => o.ParentId == null);
+            return Ok(permissions);
+        }
+        catch (Exception ex)
+        {
+            this._logger.LogError(ex, ex.Message);
+            return Problem(ex.Message);
+        }
+    }
+
+    private ValidateUserResult ValidateUser(LoginModel model)
     {
         var result = new ValidateUserResult();
         var user = _userRepository.Query().FirstOrDefault(o => o.UserName == model.UserName);
@@ -161,13 +218,5 @@ public class AccountController : BaseController
     private void UpdateUser()
     {
         this._userRepository.SaveChangesAsync();
-    }
-
-    [HttpPost]
-    public IActionResult Logout()
-    {
-        var key = nameof(OAuth2TokenResult.AccessToken).ToUnderline();
-        Response.Cookies.Delete(key);
-        return Ok(true);
     }
 }

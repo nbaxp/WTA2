@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Controllers;
 using Microsoft.AspNetCore.Mvc.Routing;
 using Microsoft.Extensions.Localization;
+using Microsoft.OpenApi.Any;
 using Microsoft.OpenApi.Models;
 using Swashbuckle.AspNetCore.SwaggerGen;
 
@@ -85,6 +86,16 @@ public class SwaggerFilter : IDocumentFilter, IOperationFilter
                     operation.Tags.Add(new OpenApiTag() { Name = "remove" });
                 }
             }
+            //
+            operation.Parameters.Add(new OpenApiParameter()
+            {
+                Name = "X-Accept",
+                In= ParameterLocation.Header,
+                Schema= new OpenApiSchema() {
+                    Type = "string",
+                    Default = new OpenApiString("application/json")
+                }
+            });
         }
     }
 }

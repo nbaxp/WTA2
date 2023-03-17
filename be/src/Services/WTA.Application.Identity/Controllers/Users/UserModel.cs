@@ -11,6 +11,9 @@ public class UserModel
     [Display]
     public string? UserName { get; set; }
 
+    [Display]
+    public string? Avatar { get; set; }
+
     [OperatorType(OperatorType.Equal)]
     [Display]
     public string? Email { get; set; }

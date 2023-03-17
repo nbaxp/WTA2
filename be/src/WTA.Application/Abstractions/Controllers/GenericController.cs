@@ -54,11 +54,7 @@ public class GenericController<TEntity, TModel, TListModel, TSearchModel> : Cont
                 model.Items = query.Skip(model.PageSize * (model.PageIndex - 1))
                     .Take(model.PageSize)
                     .ToList<TEntity, TListModel>();
-                return this.Result(new
-                {
-                    model,
-                    schema = model.GetType().GetMetadataForType(HttpContext.RequestServices)
-                });
+                return this.Result(model);
             }
             return BadRequest();
         }

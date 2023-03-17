@@ -5,7 +5,7 @@
 }
 @section scripts{
     <template id="page">
-        <h1>{{schema.title}}</h1>
+        <h1>{{model.schema.title}}</h1>
         <app-list v-model="model"></app-list>
     </template>
     <script type="module">
@@ -21,9 +21,11 @@
             setup() {
                 const appStore = useAppStore();
                 const url = ref('@action');
-                var model = reactive(@Json.Serialize(Model));
-                var schema = reactive(@Json.Serialize(ViewData.ModelMetadata.GetSchema(ViewContext.HttpContext.RequestServices)));
-
+                var model = reactive({
+                    url,
+                    model: (@Json.Serialize(Model)),
+                    schema: (@Json.Serialize(ViewData.ModelMetadata.GetSchema(ViewContext.HttpContext.RequestServices)))
+                });
                 const submit = async () => {
                     //var options = {
                     //    method: 'post',
@@ -48,9 +50,7 @@
 
                 return {
                     appStore,
-                    url,
                     model,
-                    schema,
                     submit
                 }
             }

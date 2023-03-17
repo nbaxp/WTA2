@@ -32,7 +32,8 @@ public class IdentityDbContext : IDbContext
             Type = PermissionType.Resource,
             Name = "首页",
             Number = "home",
-            Url = "/",
+            Path = "/",
+            Redirect = "/home",
             Icon = "home",
             DisplayOrder = -100
         };
@@ -49,6 +50,7 @@ public class IdentityDbContext : IDbContext
                 Name = localizer[moduleName],
                 Icon = moduleAttribute.Icon,
                 DisplayOrder = moduleAttribute.Order,
+                Path = $"/{moduleName.ToSlugify()}",
                 Url = $"/{moduleName.ToSlugify()}/"
             };
             //
@@ -68,6 +70,7 @@ public class IdentityDbContext : IDbContext
                     Number = $"{rootMenu.Number}.{resourceType.Name}",
                     Name = resourceType.GetDisplayName(),
                     DisplayOrder = displayOrder,
+                    Path = $"{resourceType.Name.ToSlugify()}",
                     Url = $"/{moduleName.ToSlugify()}/{resourceType.Name.ToSlugify()}/index",
                     Columns = JsonSerializer.Serialize(columns)
                 };
@@ -86,13 +89,14 @@ public class IdentityDbContext : IDbContext
                             Name = localizer[groupAttribute.Name],
                             Icon = groupAttribute.Icon,
                             DisplayOrder = groupAttribute.DisplayOrder,
+                            Path = $"{groupAttribute.Name.ToSlugify()}",
                             Url = $"/{moduleName.ToSlugify()}/{groupAttribute.Name.ToSlugify()}/"
                         };
                         rootMenu.Children.Add(groupMenu);
                     }
                     groupMenu.Children.Add(resourceMenu);
                     resourceMenu.Number = $"{groupMenu.Number}.{resourceType.Name}";
-                    resourceMenu.Url = $"{groupMenu.Url}{resourceType.Name.ToSlugify()}/index";
+                    resourceMenu.Url = $"{groupMenu.Path}{resourceType.Name.ToSlugify()}/index";
                 }
                 else
                 {
@@ -100,7 +104,7 @@ public class IdentityDbContext : IDbContext
                 }
                 resourceType.GetCustomAttributes(true).ForEach(attribute =>
                 {
-                    var actionAttribute = attribute as IActionAttribute;
+                    var actionAttribute = attribute as BaseActionAttribute;
                     if (actionAttribute != null)
                     {
                         var actionMenu = new Permission
@@ -108,8 +112,10 @@ public class IdentityDbContext : IDbContext
                             Type = PermissionType.Action,
                             Number = $"{resourceMenu.Number}.{actionAttribute.Name}",
                             Name = localizer[actionAttribute.Name],
-                            //Icon = actionAttribute.Icon,
-                            //DisplayOrder=actionAttribute.DisplayOrder
+                            Path = $"{actionAttribute.Name.ToSlugify()}",
+                            Url = $"{resourceMenu.Url}/{actionAttribute.Name.ToSlugify()}",
+                            Icon = actionAttribute.Icon,
+                            DisplayOrder = actionAttribute.DisplayOrder
                         };
                         resourceMenu.Children.Add(actionMenu);
                     }

@@ -5,28 +5,33 @@ import { reactive } from 'vue';
 import { useAppStore } from '../store/index.js';
 
 const template = html`<template v-for="item in model">
-  <el-sub-menu
-    v-if="item.children?.length"
-    :key="item.id+'group'"
-    :index="item.id+'group'"
-  >
-    <template #title>
-      <el-icon><svg-icon :name="item.icon??'folder'" /></el-icon>
-      <span style="margin-right: 25px">{{ item.name }}</span>
-    </template>
-    <menu-item v-model="item.children" />
-  </el-sub-menu>
-  <el-menu-item
-    v-else
-    :key="item.id"
-    :index="item.url"
-    @click="redirect(item.url)"
-  >
-    <el-icon><svg-icon :name="item.icon??'page'" /></el-icon>
-    <template #title>
-      <span>{{ item.name }}</span>
-    </template>
-  </el-menu-item>
+  <template v-if="item.type!=='Action'">
+    <el-sub-menu
+      v-if="item.children?.filter(o=>o.type!=='Action').length"
+      :key="item.id+'group'"
+      :index="item.id+'group'"
+    >
+      <template #title>
+        <el-icon><svg-icon :name="item.icon??'folder'" /></el-icon>
+        <span style="margin-right: 25px">{{ item.name }}</span>
+      </template>
+      <menu-item
+        v-model="item.children"
+        :parentPath="parentPath?(parentPath+'/'+item.path):item.path"
+      />
+    </el-sub-menu>
+    <el-menu-item
+      v-else
+      :key="item.id"
+      :index="item.url"
+      @click="redirect(item)"
+    >
+      <el-icon><svg-icon :name="item.icon??'page'" /></el-icon>
+      <template #title>
+        <span>{{ item.name }}</span>
+      </template>
+    </el-menu-item>
+  </template>
 </template> `;
 
 export default {
@@ -38,6 +43,10 @@ export default {
       type: Object,
       default: null,
     },
+    parentPath: {
+      type: String,
+      default: '',
+    },
   },
   setup(props) {
     const appStore = useAppStore();
@@ -46,8 +55,9 @@ export default {
         .orderBy((o) => o.displayOrder)
         .toArray(),
     );
-    const redirect = (o) => {
-      window.location.href = appStore.basePath === '/' ? o : `${appStore}${o}`;
+    const redirect = (item) => {
+      const path = (props.parentPath ? props.parentPath + '/' + item.path : item.path) + '/index';
+      window.location.href = appStore.basePath === '/' ? path : `${appStore.basePath}${path}`;
     };
     return {
       model,

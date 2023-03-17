@@ -9,6 +9,8 @@ public class RolePermission : BaseEntity, IAssociation
 {
     public Guid RoleId { get; set; }
     public Guid PermissionId { get; set; }
+    public string? RowLimit { get; set; }
+    public string? ColumnLimit { get; set; }
     public Role Role { get; set; } = null!;
     public Permission Permission { get; set; } = null!;
 }

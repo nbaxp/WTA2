@@ -22,7 +22,7 @@ public abstract class BaseTreeEntity<T> : BaseEntity where T : class
     [HiddenInput]
     public string InternalPath { get; set; } = null!;
 
-    public void UpdatePath(BaseTreeEntity<T>? parent = null)
+    public T UpdatePath(BaseTreeEntity<T>? parent = null)
     {
         this.InternalPath = $"/{WebEncoders.Base64UrlEncode(this.Id.ToByteArray())}";
         if (parent != null)
@@ -33,5 +33,6 @@ public abstract class BaseTreeEntity<T> : BaseEntity where T : class
         {
             this.Children.ForEach(o => (o as BaseTreeEntity<T>)!.UpdatePath(this));
         }
+        return (this as T)!;
     }
 }

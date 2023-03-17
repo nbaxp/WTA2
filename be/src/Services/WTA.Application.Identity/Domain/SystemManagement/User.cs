@@ -44,6 +44,7 @@ public class User : BaseEntity
     [Display(Name = "用户名")]
     [ReadOnly(true)]
     public string? UserName { get; set; }
+    public string? Avatar { get; set; }
 
     public List<UserDepartment> UserDepartments { get; set; } = new List<UserDepartment>();
     public List<UserRole> UserRoles { get; set; } = new List<UserRole>();

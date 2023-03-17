@@ -280,9 +280,16 @@ public class WebApp
             {
                 OnMessageReceived = context =>
                 {
-                    if (!context.Request.IsJsonRequest() && context.Request.Cookies.TryGetValue("access_token", out var token))
+                    if (!context.Request.IsJsonRequest())
                     {
-                        context.Token = token;
+                        if (context.Request.Cookies.TryGetValue("access_token", out var token))
+                        {
+                            context.Token = token;
+                        }
+                        else if(context.Request.Query.ToString()!.Contains("access_token"))
+                        {
+                            context.Token = context.Request.Query["access_token"];
+                        }
                     }
                     return Task.CompletedTask;
                 },

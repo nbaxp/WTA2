@@ -28,7 +28,6 @@ public class PermissionController : GenericController<Permission, Permission, Pe
     {
         return this._permissionRepository
                     .AsNoTracking()
-                    .Where(o => o.ParentId == null)
                     .OrderBy(o => o.DisplayOrder)
                     .ToList<Permission, MenuItemModel>();
     }

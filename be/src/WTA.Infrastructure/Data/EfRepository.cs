@@ -45,7 +45,7 @@ public class EfRepository<T> : IRepository<T> where T : BaseEntity
 
     public IQueryable<T> AsNoTracking()
     {
-        return _efDbContext.Set<T>().AsNoTrackingWithIdentityResolution();
+        return _efDbContext.Set<T>().AsNoTracking();
     }
 
     public Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)

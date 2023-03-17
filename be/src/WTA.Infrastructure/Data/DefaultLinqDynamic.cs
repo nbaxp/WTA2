@@ -23,13 +23,21 @@ public class DefaultLinqDynamic : ILinqDynamic
 
     public List<TModel> ToList<TEntity, TModel>(IQueryable<TEntity> source) where TModel : class
     {
-        return source.ProjectToType<TModel>().ToList();
+        var list = source.ToList().Select(o => o.To<TModel>()).ToList();
+        if (typeof(TModel).BaseType != null && typeof(TModel).BaseType!.IsGenericType && typeof(TModel).BaseType!.GetGenericTypeDefinition() == typeof(BaseTreeModel<>))
+        {
+            var method = typeof(BaseTreeModelExtensions).GetMethod(nameof(BaseTreeModelExtensions.IdentityResolution));
+            list = (List<TModel>)method!.MakeGenericMethod(typeof(TModel)).Invoke(null, new object[] { list })!;
+            //BaseTreeModelExtensions.IdentityResolution(list as List<BaseTreeModel<TModel>>);
+        }
+        return list;
     }
 
     public IQueryable<T> Where<T>(IQueryable<T> source, string queryString, params object[] args)
     {
         return DynamicQueryableExtensions.Where(source, queryString, args);
     }
+
     public IQueryable<TEntity> Where<TEntity, TModel>(IQueryable<TEntity> source, TModel model) where TModel : class
     {
         var properties = model!.GetType().GetProperties(BindingFlags.Instance | BindingFlags.Public | BindingFlags.GetProperty);
