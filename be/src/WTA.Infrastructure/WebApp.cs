@@ -205,7 +205,7 @@ public class WebApp
             .Where(type => type.GetCustomAttributes(typeof(ServiceAttribute<>)).Any())
             .ForEach(type =>
             {
-                foreach (var implementation in type.GetCustomAttributes(typeof(ServiceAttribute<>)).Select(o => (o as IServiceAttribute)!))
+                foreach (var implementation in type.GetCustomAttributes(typeof(ServiceAttribute<>)).Select(o => (o as BaseServiceAttribute)!))
                 {
                     var currentPlatformType = (PlatformType)Enum.Parse(typeof(PlatformType), this.OSPlatformName);
                     if (implementation.PlatformType.HasFlag(currentPlatformType))

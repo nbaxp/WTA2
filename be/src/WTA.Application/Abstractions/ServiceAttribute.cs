@@ -3,21 +3,20 @@ using Microsoft.Extensions.DependencyInjection;
 namespace WTA.Application.Abstractions;
 
 [AttributeUsage(AttributeTargets.Class, AllowMultiple = true)]
-public class ServiceAttribute<T> : Attribute, IServiceAttribute
+public class BaseServiceAttribute : Attribute
 {
-    /// <summary>
-    ///
-    /// </summary>
-    /// <param name="lifetime"></param>
-    /// <param name="platform"></param>
+    public ServiceLifetime Lifetime { get; set; }
+    public PlatformType PlatformType { get; set; }
+    public Type ServiceType { get; set; } = null!;
+}
+
+[AttributeUsage(AttributeTargets.Class, AllowMultiple = true)]
+public class ServiceAttribute<T> : BaseServiceAttribute
+{
     public ServiceAttribute(ServiceLifetime lifetime = ServiceLifetime.Transient, PlatformType platformType = PlatformType.All)
     {
         this.ServiceType = typeof(T);
         this.Lifetime = lifetime;
         PlatformType = platformType;
     }
-
-    public ServiceLifetime Lifetime { get; }
-    public PlatformType PlatformType { get; }
-    public Type ServiceType { get; }
 }
