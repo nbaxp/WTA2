@@ -34,29 +34,25 @@ public class GenericController<TEntity, TModel, TListModel, TSearchModel> : Cont
     {
         try
         {
-            if (ModelState.IsValid)
+            var query = _repository.AsNoTracking();
+            var isTree = typeof(TEntity).IsAssignableTo(typeof(BaseTreeEntity<TEntity>));
+            if (isTree)
             {
-                var query = _repository.AsNoTracking();
-                var isTree = typeof(TEntity).IsAssignableTo(typeof(BaseTreeEntity<TEntity>));
-                if (isTree)
-                {
-                    query = query.Where($"{nameof(BaseTreeEntity<TEntity>.ParentId)}==null");
-                }
-                if (!string.IsNullOrEmpty(model.OrderBy))
-                {
-                    query = query.OrderBy(model.OrderBy);
-                }
-                else
-                {
-                    query = isTree ? query.OrderBy("Number") : query.OrderBy("Id");
-                }
-                model.TotalCount = await query.CountAsync().ConfigureAwait(false);
-                model.Items = query.Skip(model.PageSize * (model.PageIndex - 1))
-                    .Take(model.PageSize)
-                    .ToList<TEntity, TListModel>();
-                return this.Result(model);
+                query = query.Where($"{nameof(BaseTreeEntity<TEntity>.ParentId)}==null");
             }
-            return BadRequest();
+            if (!string.IsNullOrEmpty(model.OrderBy))
+            {
+                query = query.OrderBy(model.OrderBy);
+            }
+            else
+            {
+                query = isTree ? query.OrderBy("Number") : query.OrderBy("Id");
+            }
+            model.TotalCount = await query.CountAsync().ConfigureAwait(false);
+            model.Items = query.Skip(model.PageSize * (model.PageIndex - 1))
+                .Take(model.PageSize)
+                .ToList<TEntity, TListModel>();
+            return this.Result(model);
         }
         catch (Exception ex)
         {

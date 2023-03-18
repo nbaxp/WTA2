@@ -23,6 +23,9 @@ const getErrorMessageByCode = (code) => {
 
 const globalConfig = {
   timeout: 30000,
+  paramsSerializer: {
+    serialize: (params) => (Qs.stringify(params, { allowDots: true }))
+  }
 };
 
 const request = axios.create(globalConfig);

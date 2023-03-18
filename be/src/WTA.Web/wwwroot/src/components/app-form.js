@@ -1,45 +1,36 @@
-import html from '../../utils/index.js';
+import html from '../utils/index.js';
 import appFormItem from './app-form-item.js';
 import { ref, reactive, watch } from 'vue';
-import { cloneDeep } from '../../utils/index.js';
-import request from '../../request/index.js';
+import { cloneDeep } from '../utils/index.js';
+import request from '../request/index.js';
 
 const template = html`
-  <el-card class="box-card">
-    <template #header>
-      <div class="card-header">
-        <slot name="header">
-          <template v-if="model.schema?.title"> {{ model.schema?.title }} </template>
-        </slot>
-      </div>
-    </template>
-    <el-form
-      ref="formRef"
-      v-loading="loading"
-      :inline="mode==='query'"
-      :model="model.data"
-      label-width="120px"
-    >
-      <app-form-item
-        :mode="mode"
-        v-model="model.data"
-        :schema="model.schema"
-        :errors="model.errors"
-      />
-      <slot name="footer">
-        <el-form-item>
-          <el-button
-            :disabled="loading"
-            type="primary"
-            @click="submit"
-          >
-            {{$t('confirm')}}
-          </el-button>
-          <el-button @click="reset">{{$t('reset')}}</el-button>
-        </el-form-item>
-      </slot>
-    </el-form>
-  </el-card>
+  <el-form
+    ref="formRef"
+    v-loading="loading"
+    :inline="mode==='query'"
+    :model="model.model"
+    label-width="120px"
+  >
+    <app-form-item
+      :mode="mode"
+      v-model="model.model"
+      :schema="model.schema"
+      :errors="model.errors"
+    />
+    <slot name="footer">
+      <el-form-item>
+        <el-button
+          :disabled="loading"
+          type="primary"
+          @click="submit"
+        >
+          {{$t('confirm')}}
+        </el-button>
+        <el-button @click="reset">{{$t('reset')}}</el-button>
+      </el-form-item>
+    </slot>
+  </el-form>
 `;
 export default {
   template,
@@ -60,7 +51,6 @@ export default {
     watch(model, (value) => {
       context.emit('update:modelValue', value);
     });
-    //context.expose({ test: () => console.log('test') });
     //
     const formRef = ref(null);
     const loading = ref(false);
@@ -75,7 +65,7 @@ export default {
     //
     async function load(data) {
       const url = props.modelValue.url;
-      const method = props.modelValue.mode === 'query' ? 'get' : 'post';
+      const method = props.mode === 'query' ? 'get' : 'post';
       const config = {
         url,
         method,
@@ -90,7 +80,7 @@ export default {
         const result = response.data?.data ?? response.data;
         return result;
       } catch (e) {
-        model.errors.value = e.response.data.data ?? e.response.data;
+        model.errors = e.response.data.data ?? e.response.data;
         throw e;
       }
     }
@@ -100,9 +90,9 @@ export default {
         const valid = await validate();
         if (valid) {
           loading.value = true;
-          const data = cloneDeep(model.data);
+          let data = cloneDeep(model.model);
           context.emit('before', (val) => {
-            Object.assign(data, val);
+            data = val(data);
           });
           const result = await load(data);
           context.emit('after', result);
@@ -113,6 +103,7 @@ export default {
         loading.value = false;
       }
     };
+    context.expose({ submit, reset });
     return {
       model,
       formRef,

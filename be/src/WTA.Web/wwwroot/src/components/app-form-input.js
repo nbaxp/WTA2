@@ -1,6 +1,6 @@
-import html from '../../utils/index.js';
+import html from '../utils/index.js';
 import { ref, reactive, watch } from 'vue';
-import SvgIcon from '../svg-icon.js';
+import SvgIcon from './svg-icon.js';
 
 const template = html` <template v-if="schema.type==='boolean'">
     <el-checkbox v-model="model[prop]" />
@@ -8,9 +8,9 @@ const template = html` <template v-if="schema.type==='boolean'">
   <template v-else>
     <el-input
       v-model="model[prop]"
-      :type="schema.input ?? schema.type === 'string' ? 'text' : schema.type"
+      :type="schema.ui ?? schema.format ?? schema.type"
       :placeholder="placeholder"
-      :show-password="schema.input === 'password'"
+      :show-password="schema.format === 'password'"
       clearable
     >
       <template

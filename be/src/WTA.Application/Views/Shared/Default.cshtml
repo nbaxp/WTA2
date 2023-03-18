@@ -5,13 +5,20 @@
 }
 @section scripts{
     <template id="page">
-        <app-form ref="appFormRef" v-model="model" mode="create" @@after="after"></app-form>
+      <el-card>
+            <template #header>
+                <div class="card-header">
+                    {{ model.schema?.title }}
+                </div>
+            </template>
+            <app-form ref="appFormRef" v-model="model" mode="create" @@after="after" />
+        </el-card>
     </template>
     <script type="module">
         import { ref, reactive, onMounted } from 'vue';
         import { ElMessage } from 'element-plus';
         import request from 'request';
-        import appForm from './src/components/form/app-form.js';
+        import appForm from './src/components/app-form.js';
         import { useAppStore } from './src/store/index.js';
 
         window.page = {
@@ -21,7 +28,7 @@
                 const appStore = useAppStore();
                 const model = reactive({
                     url: '@action',
-                    data: (@Json.Serialize(Model)),
+                    model: (@Json.Serialize(Model)),
                     errors: (@Json.Serialize(ViewData.ModelState.ToErrors())),
                     schema: (@Json.Serialize(ViewData.ModelMetadata.GetSchema(ViewContext.HttpContext.RequestServices)))
                 });
@@ -30,7 +37,7 @@
                     console.log(result);
                     const { access_token } = result;
                     localStorage.setItem("token", access_token);
-                    window.location = model.data.returnUrl;
+                    window.location = model.model.returnUrl;
                 };
 
                 return {

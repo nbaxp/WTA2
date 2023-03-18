@@ -145,18 +145,26 @@ export default {
     };
 
     const confirmLogout = async () => {
+      const clientLogout = () => {
+        localStorage.removeItem('token');
+        window.location = appStore.basePath;
+      };
       try {
         await ElMessageBox.confirm('确认退出？', '提示', { type: 'warning' });
         const config = { url: 'identity/account/logout', method: 'post' };
         const response = await request.request(config);
-        localStorage.removeItem('token');
-        window.location = appStore.basePath;
+        clientLogout();
       } catch (error) {
         console.log(error);
-        ElMessage({
-          type: 'info',
-          message: '退出取消',
-        });
+        if (error === 'cancel') {
+          ElMessage({
+            type: 'info',
+            message: '退出取消',
+          });
+        }
+        else if (error.response?.status === 401) {
+          clientLogout();
+        }
       }
     };
 

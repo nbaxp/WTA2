@@ -34,13 +34,10 @@ public static class TypeExtensions
     {
         var modelType = meta.UnderlyingOrModelType;
         var title = meta.ContainerType == null ? modelType.GetDisplayName() : meta.GetDisplayName();
-        if (modelType.IsGenericType &&
-            modelType.GetGenericArguments()[0].IsGenericType &&
-            modelType.GetGenericArguments()[0].GetGenericTypeDefinition() == typeof(PaginationModel<,>))
+        if (modelType.IsGenericType && modelType.GetGenericTypeDefinition() == typeof(PaginationModel<,>))
         {
-            var genericType = modelType.GenericTypeArguments[0].GetGenericArguments()[0];
+            var genericType = modelType.GetGenericArguments()[0];
             var modelAttribute = genericType.GetCustomAttributes().FirstOrDefault(a => a.GetType().IsAssignableTo(typeof(IModelAttribute))) as IModelAttribute;
-
             if (modelAttribute != null)
             {
                 title = modelAttribute.EntityType.GetDisplayName();

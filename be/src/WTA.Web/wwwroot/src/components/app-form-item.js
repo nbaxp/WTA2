@@ -1,7 +1,7 @@
-import html from '../../utils/index.js';
+import html from '../utils/index.js';
 import { ref, reactive, watch } from 'vue';
 import appFormInput from './app-form-input.js';
-import { createRules } from '../../utils/index.js';
+import { createRules } from '../utils/index.js';
 
 const template = html` <template
   v-for="(value, key) in schema.properties"

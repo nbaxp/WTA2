@@ -33,7 +33,7 @@ public class IdentityDbContext : IDbContext
             Name = "首页",
             Number = "home",
             Path = "/",
-            Redirect = "/home",
+            Redirect = "home",
             Icon = "home",
             DisplayOrder = -100
         };
@@ -71,6 +71,7 @@ public class IdentityDbContext : IDbContext
                     Name = resourceType.GetDisplayName(),
                     DisplayOrder = displayOrder,
                     Path = $"{resourceType.Name.ToSlugify()}",
+                    Redirect = "index",
                     Url = $"/{moduleName.ToSlugify()}/{resourceType.Name.ToSlugify()}/index",
                     Columns = JsonSerializer.Serialize(columns)
                 };

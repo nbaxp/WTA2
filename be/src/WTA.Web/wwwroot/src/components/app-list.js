@@ -1,10 +1,47 @@
 import html from '../utils/index.js';
-import { reactive, onMounted, ref } from 'vue';
+import { ref, reactive, watch, onMounted } from 'vue';
+import appForm from './app-form.js';
 
 const template = html`
   <el-card>
-    <el-row><el-col>查询表单</el-col> </el-row>
-    <el-row><el-col>操作按钮</el-col> </el-row>
+    <el-row>
+      <el-col>
+        <app-form
+          ref="queryFormRef"
+          v-model="queryModel"
+          mode="query"
+          hideHeader="true"
+          @before="beforeQuery"
+          @after="afterQuery"
+        >
+          <template #footer>
+            <div></div>
+          </template>
+        </app-form>
+      </el-col>
+    </el-row>
+    <el-row>
+      <el-col>
+        <div class="d-flex justify-content-between" style="margin-bottom:18px;">
+          <div>
+            <el-button
+              type="primary"
+              @click="queryFormRef.submit()"
+              >{{$t('confirm')}}</el-button
+            >
+            <el-button
+              type="primary"
+              @click="queryFormRef.reset()"
+              >{{$t('reset')}}</el-button
+            >
+          </div>
+          <div>
+          <template>
+          </template>
+          </div>
+        </div>
+      </el-col>
+    </el-row>
     <el-row>
       <el-col>
         <el-scrollbar>
@@ -14,7 +51,7 @@ const template = html`
             border
             highlight-current-row
             table-layout="auto"
-            :data="model.model.items"
+            :data="model.items"
             :default-sort="sortModel"
             :lazy="true"
             :load="lazyLoad"
@@ -27,18 +64,17 @@ const template = html`
               fixed="left"
             />
             <el-table-column
-              v-if="!model.disableRowIndex"
               :label="$t('rowIndex')"
               type="index"
               align="center"
               fixed="left"
             >
               <template #default="scope">
-                {{ (pageModel.pageIndex - 1) * pageModel.pageSize + scope.$index + 1 }}
+                {{ (model.pageIndex - 1) * model.pageSize + scope.$index + 1 }}
               </template>
             </el-table-column>
             <template
-              v-for="(item, key) in model.schema.properties.items.items.properties"
+              v-for="(item, key) in schema.properties.items.items.properties"
               :key="key"
             >
               <template v-if="item.template !== 'hiddenInput'">
@@ -48,15 +84,7 @@ const template = html`
                   :label="item.title ?? key"
                   :sortable="item.sortable ? (model.disablePagination ? true : 'custom') : null"
                 >
-                  <template #default="scope">
-                    <app-form-input
-                      :prop="key"
-                      :model="scope.row"
-                      :schema="item"
-                      :disabled="true"
-                    />
-                    {{scope.row[key]}}
-                  </template>
+                  <template #default="scope"> {{scope.row[key]}} </template>
                 </el-table-column>
               </template>
             </template>
@@ -75,13 +103,12 @@ const template = html`
     <el-row class="mt-4">
       <el-col>
         <el-pagination
-          v-if="!model.disablePagination"
-          v-model:currentPage="pageModel.pageIndex"
-          v-model:page-size="pageModel.pageSize"
+          v-model:currentPage="model.pageIndex"
+          v-model:page-size="model.pageSize"
           class="justify-content-sm-end"
           :background="true"
           layout="total, sizes, prev, pager, next, jumper"
-          :total="pageModel.total"
+          :total="model.totalCount"
           @size-change="onPageSizeChange"
           @current-change="onPageIndexChange"
         />
@@ -91,23 +118,43 @@ const template = html`
 `;
 
 export default {
+  components: { appForm },
+  template,
   props: {
     modelValue: {
       type: Object,
       default: null,
     },
   },
-  template,
-  setup(props) {
-    const model = reactive(props.modelValue);
-    const pageModel = reactive({
-      pageIndex: 1,
-      pageSize: 10,
-      total: 0,
+  emits: ['update:modelValue', 'before', 'after'],
+  setup(props, context) {
+    const model = reactive(props.modelValue.model);
+    const schema = props.modelValue.schema;
+    //
+    const queryFormRef = ref(null);
+    const queryModel = reactive({
+      url: props.modelValue.url,
+      model: props.modelValue.model.query,
+      schema: props.modelValue.schema.properties.query,
     });
+    const beforeQuery = (callback) => {
+      callback(o => {
+        return {
+          pageIndex: model.pageIndex,
+          pageSize: model.pageSize,
+          query: o
+        };
+      });
+    };
+    const tableRef = ref(null);
+    //
     return {
       model,
-      pageModel,
+      schema,
+      queryFormRef,
+      queryModel,
+      tableRef,
+      beforeQuery
     };
   },
 };

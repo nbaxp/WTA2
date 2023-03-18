@@ -45,7 +45,7 @@ export default {
     },
     parentPath: {
       type: String,
-      default: '',
+      default: null,
     },
   },
   setup(props) {
@@ -56,7 +56,10 @@ export default {
         .toArray(),
     );
     const getUrl = (item) => {
-      return (props.parentPath ? props.parentPath + '/' + item.path : item.path) + '/index';
+      if (item.path === '/') {
+        return item.path;
+      }
+      return (props.parentPath ? `${props.parentPath}/${item.path}` : item.path) + (item.redirect ? `/${item.redirect}` : '');
     };
     const redirect = (item) => {
       const url = getUrl(item);
