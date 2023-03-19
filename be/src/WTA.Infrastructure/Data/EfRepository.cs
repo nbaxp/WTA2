@@ -1,4 +1,6 @@
+using System.Reflection;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
 using WTA.Application.Abstractions;
 using WTA.Application.Domain;
 
@@ -8,9 +10,10 @@ public class EfRepository<T> : IRepository<T> where T : BaseEntity
 {
     private readonly DbContext _efDbContext;
 
-    public EfRepository(DbContext efDbContext)
+    public EfRepository(IServiceProvider serviceProvider)
     {
-        this._efDbContext = efDbContext;
+        var dbContextType = (typeof(T).GetCustomAttribute(typeof(DbContextAttribute<>)) as BaseContextAttribute).DbContextType;
+        this._efDbContext = serviceProvider.GetRequiredService(dbContextType) as DbContext;
     }
 
     public ValueTask<T?> FindAsync(Guid id, CancellationToken cancellationToken = default)

@@ -1,7 +1,10 @@
+using WTA.Application.Abstractions;
 using WTA.Application.Domain;
+using WTA.Application.Identity.Data;
 
 namespace WTA.Application.Identity.Domain.SystemManagement;
 
+[DbContext<IdentityDbContext>]
 public class UserDepartment : BaseEntity, IAssociation
 {
     public Guid UserId { get; set; }

@@ -9,16 +9,13 @@ using WTA.Application.Application;
 using WTA.Application.Domain;
 using WTA.Application.Extensions;
 using WTA.Application.Identity.Domain.SystemManagement;
+using WTA.Infrastructure.Data;
 
 namespace WTA.Application.Identity.Data;
 
-public class IdentityDbContext : IDbContext
+public class IdentityDbContext : BaseDbContext<IdentityDbContext>
 {
-    public void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-    {
-    }
-
-    public void OnModelCreating(ModelBuilder modelBuilder)
+    public IdentityDbContext(IServiceScopeFactory serviceScopeFactory) : base(serviceScopeFactory)
     {
     }
 

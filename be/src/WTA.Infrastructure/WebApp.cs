@@ -84,9 +84,8 @@ public class WebApp
             .ToList();
     }
 
-    public string OSPlatformName { get; }
     public string Name { get; }
-
+    public string OSPlatformName { get; }
     public virtual void Configure(WebApplication app)
     {
         App.Configuration = app.Configuration;
@@ -99,11 +98,6 @@ public class WebApp
         UseAuthorization(app);
         UseDatabase(app);
         UseSignalR<PageHub>(app);
-    }
-
-    protected virtual void UseSignalR<T>(WebApplication app, string pattern = "/hub") where T : Hub
-    {
-        app.MapHub<T>(pattern);
     }
 
     public virtual void ConfigureServices(WebApplicationBuilder builder)
@@ -190,7 +184,34 @@ public class WebApp
         }
     }
 
+    protected virtual void UseSignalR<T>(WebApplication app, string pattern = "/hub") where T : Hub
+    {
+        app.MapHub<T>(pattern);
+    }
     #region add services
+
+    /// <summary>
+    /// 根据 OptionsAttribute 自动配置 Options
+    /// </summary>
+    public void AddDefaultOptions(WebApplicationBuilder builder)
+    {
+        var configureMethod = typeof(OptionsConfigurationServiceCollectionExtensions)
+            .GetMethod(nameof(OptionsConfigurationServiceCollectionExtensions.Configure),
+            new[] { typeof(IServiceCollection), typeof(IConfiguration) });
+
+        AppDomain.CurrentDomain.GetAssemblies()
+            .Where(o => o.FullName!.StartsWith(nameof(WTA)))
+            .Where(o => o.GetTypes()
+            .Any(o => o.GetCustomAttributes(typeof(OptionsAttribute)).Any()))
+            .SelectMany(o => o.GetTypes())
+            .Where(type => type.GetCustomAttributes<OptionsAttribute>().Any())
+            .ForEach(type =>
+            {
+                var attribute = type.GetCustomAttribute<OptionsAttribute>()!;
+                var configurationSection = builder.Configuration.GetSection(attribute.Section ?? type.Name.TrimEndOptions());
+                configureMethod?.MakeGenericMethod(type).Invoke(null, new object[] { builder.Services, configurationSection });
+            });
+    }
 
     /// <summary>
     /// 根据 ImplementationAttribute 自动配置依赖注入
@@ -226,28 +247,6 @@ public class WebApp
                 }
             });
     }
-
-    /// <summary>
-    /// 根据 OptionsAttribute 自动配置 Options
-    /// </summary>
-    public void AddDefaultOptions(WebApplicationBuilder builder)
-    {
-        var configureMethod = typeof(OptionsConfigurationServiceCollectionExtensions)
-            .GetMethod(nameof(OptionsConfigurationServiceCollectionExtensions.Configure),
-            new[] { typeof(IServiceCollection), typeof(IConfiguration) });
-        AppDomain.CurrentDomain.GetAssemblies()
-            .Where(o => o.GetTypes()
-            .Any(o => o.GetCustomAttributes(typeof(OptionsAttribute)).Any()))
-            .SelectMany(o => o.GetTypes())
-            .Where(type => type.GetCustomAttributes<OptionsAttribute>().Any())
-            .ForEach(type =>
-            {
-                var attribute = type.GetCustomAttribute<OptionsAttribute>()!;
-                var configurationSection = builder.Configuration.GetSection(attribute.Section ?? type.Name.TrimEndOptions());
-                configureMethod?.MakeGenericMethod(type).Invoke(null, new object[] { builder.Services, configurationSection });
-            });
-    }
-
     protected virtual void AddAuthentication(WebApplicationBuilder builder)
     {
         builder.Services.AddSingleton<CustomJwtSecurityTokenHandler>();
@@ -286,7 +285,7 @@ public class WebApp
                         {
                             context.Token = token;
                         }
-                        else if(context.Request.Query.ToString()!.Contains("access_token"))
+                        else if (context.Request.Query.ToString()!.Contains("access_token"))
                         {
                             context.Token = context.Request.Query["access_token"];
                         }
@@ -329,22 +328,31 @@ public class WebApp
 
     protected virtual void AddDbContext(WebApplicationBuilder builder)
     {
-        builder.Services.AddScoped<DbContext, DefaultDbContext>();
-        builder.Services.AddScoped(typeof(IRepository<>), typeof(EfRepository<>));
         var dbConnectionName = builder.Configuration.GetConnectionString("DefaultDatabase");
         var connectionString = builder.Configuration.GetConnectionString(dbConnectionName!);
-        builder.Services.AddPooledDbContextFactory<DefaultDbContext>(
-            options =>
+        App.ModuleAssemblies!.ForEach(a =>
+        {
+            a.GetTypes().Where(t => t.IsAssignableTo(typeof(DbContext))).ForEach(t =>
             {
-                if (dbConnectionName!.ToLowerInvariant() == "mysql")
-                {
-                    options.UseMySql(connectionString, ServerVersion.AutoDetect(connectionString));
-                }
-                else
-                {
-                    options.UseSqlite(connectionString);
-                }
+                builder.Services.AddScoped(t);
             });
+        });
+        //builder.Services.AddScoped<DbContext, BaseDbContext>();
+        builder.Services.AddScoped(typeof(IRepository<>), typeof(EfRepository<>));
+        //var dbConnectionName = builder.Configuration.GetConnectionString("DefaultDatabase");
+        //var connectionString = builder.Configuration.GetConnectionString(dbConnectionName!);
+        //builder.Services.AddDbContext<BaseDbContext>( ServiceLifetime.Scoped,
+        //    options =>
+        //    {
+        //        if (dbConnectionName!.ToLowerInvariant() == "mysql")
+        //        {
+        //            options.UseMySql(connectionString, ServerVersion.AutoDetect(connectionString));
+        //        }
+        //        else
+        //        {
+        //            options.UseSqlite(connectionString);
+        //        }
+        //    });
     }
 
     protected virtual void AddHttp(WebApplicationBuilder builder)
@@ -505,13 +513,13 @@ public class WebApp
 
     protected virtual void UseDatabase(WebApplication app)
     {
-        using var scope = app.Services.CreateScope();
-        using var dbContext = scope.ServiceProvider.GetRequiredService<DbContext>();
-        if (dbContext.Database.EnsureCreated())
-        {
-            (dbContext as DefaultDbContext)?.Seed();
-            App.DbContextList?.ForEach(o => o.Seed(dbContext));
-        }
+        //using var scope = app.Services.CreateScope();
+        //using var dbContext = scope.ServiceProvider.GetRequiredService<DbContext>();
+        //if (dbContext.Database.EnsureCreated())
+        //{
+        //    (dbContext as BaseDbContext)?.Seed();
+        //    App.DbContextList?.ForEach(o => o.Seed(dbContext));
+        //}
     }
 
     protected virtual void UseLocalization(WebApplication app)

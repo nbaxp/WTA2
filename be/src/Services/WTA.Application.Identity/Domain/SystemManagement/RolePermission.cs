@@ -1,10 +1,13 @@
 using System.ComponentModel.DataAnnotations;
+using WTA.Application.Abstractions;
 using WTA.Application.Domain;
+using WTA.Application.Identity.Data;
 
 namespace WTA.Application.Identity.Domain.SystemManagement;
 
 [Display(Name = "角色权限")]
 [SystemManagement]
+[DbContext<IdentityDbContext>]
 public class RolePermission : BaseEntity, IAssociation
 {
     public Guid RoleId { get; set; }

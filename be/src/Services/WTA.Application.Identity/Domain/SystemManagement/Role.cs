@@ -1,11 +1,15 @@
 using System.ComponentModel.DataAnnotations;
 using Microsoft.AspNetCore.Mvc;
+using WTA.Application.Abstractions;
 using WTA.Application.Domain;
+using WTA.Application.Identity.Data;
 
 namespace WTA.Application.Identity.Domain.SystemManagement;
 
 [Display(Name = "角色", Order = 2)]
 [SystemManagement]
+[DbContext<IdentityDbContext>]
+
 public class Role : BaseEntity
 {
     [Display(Name = "编号")]

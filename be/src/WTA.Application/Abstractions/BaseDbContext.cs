@@ -1,6 +1,5 @@
 using System.Linq.Expressions;
 using System.Reflection;
-using LinqToDB.EntityFrameworkCore;
 using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.ChangeTracking;
@@ -15,25 +14,20 @@ using WTA.Application.Extensions;
 
 namespace WTA.Infrastructure.Data;
 
-public class DefaultDbContext : DbContext
+public class BaseDbContext<T> : DbContext where T : DbContext
 {
     public static readonly ILoggerFactory DefaultLoggerFactory = LoggerFactory.Create(builder => { builder.AddConsole(); });
 
-    private readonly IServiceScopeFactory _serviceScopeFactory;
+    private readonly IServiceScopeFactory _serviceProvider;
 
-    static DefaultDbContext()
+    public BaseDbContext(IServiceScopeFactory serviceProvider)
     {
-        LinqToDBForEFTools.Initialize();
-    }
-
-    public DefaultDbContext(DbContextOptions options, IServiceScopeFactory serviceScopeFactory) : base(options)
-    {
-        _serviceScopeFactory = serviceScopeFactory;
+        _serviceProvider = serviceProvider;
     }
 
     public override int SaveChanges()
     {
-        using var scope = _serviceScopeFactory.CreateScope();
+        using var scope = _serviceProvider.CreateScope();
         var services = scope.ServiceProvider;
         var entries = GetEntries();
         BeforeSave(entries, services);
@@ -44,7 +38,7 @@ public class DefaultDbContext : DbContext
 
     public override async Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
     {
-        using var scope = _serviceScopeFactory.CreateScope();
+        using var scope = _serviceProvider.CreateScope();
         var services = scope.ServiceProvider;
         var entries = GetEntries();
         BeforeSave(entries, services);
@@ -55,7 +49,7 @@ public class DefaultDbContext : DbContext
 
     public override async Task<int> SaveChangesAsync(bool acceptAllChangesOnSuccess, CancellationToken cancellationToken = default)
     {
-        using var scope = _serviceScopeFactory.CreateScope();
+        using var scope = _serviceProvider.CreateScope();
         var services = scope.ServiceProvider;
         var entries = GetEntries();
         BeforeSave(entries, services);
@@ -64,7 +58,7 @@ public class DefaultDbContext : DbContext
         return result;
     }
 
-    public void Seed()
+    public virtual void Seed()
     {
     }
 
@@ -128,7 +122,7 @@ public class DefaultDbContext : DbContext
                 modelBuilder.Entity(item.ClrType).HasIndex(nameof(BaseTreeEntity<BaseEntity>.Number)).IsUnique();
             }
             // 配置多租户
-            using var scope = _serviceScopeFactory.CreateScope();
+            using var scope = _serviceProvider.CreateScope();
             var services = scope.ServiceProvider;
             var tenant = services.GetRequiredService<ITenantService>().Tenant;
             var tenantProperty = item.FindProperty("Tenant");

@@ -1,12 +1,15 @@
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
+using WTA.Application.Abstractions;
 using WTA.Application.Domain;
+using WTA.Application.Identity.Data;
 
 namespace WTA.Application.Identity.Domain.SystemManagement;
 
 [Display(Name = "用户", Order = 1)]
 [SystemManagement]
 [Action("ResetPassword")]
+[DbContext<IdentityDbContext>]
 public class User : BaseEntity
 {
     public int AccessFailedCount { get; set; }
