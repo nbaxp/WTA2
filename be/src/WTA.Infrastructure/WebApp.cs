@@ -541,7 +541,7 @@ public class WebApp
             {
                 dbCreator.Create();
             }
-            using var transaction = context.Database.BeginTransaction();
+            //using var transaction = context.Database.BeginTransaction();
             try
             {
                 var history = metaContext.Set<DbContextHistory>().FirstOrDefault(o => o.Name == name);
@@ -561,12 +561,12 @@ public class WebApp
                         Console.WriteLine($"error:{name},{hash},{history.Hash}");
                     }
                 }
-                transaction.Commit();
+                //transaction.Commit();
             }
             catch (Exception ex)
             {
                 Console.WriteLine(ex.ToString());
-                transaction.Rollback();
+                //transaction.Rollback();
             }
         }
     }
