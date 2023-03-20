@@ -13,9 +13,9 @@ using WTA.Application.Identity.Domain.SystemManagement;
 
 namespace WTA.Application.Identity.Data;
 
-public class IdentityDbContext : BaseDbContext<IdentityDbContext>
+public class IdentityDbContext : BaseDbContext<IdentityDbContext>, IDbSeed
 {
-    public IdentityDbContext(DbContextOptions<IdentityDbContext> options,IServiceScopeFactory serviceScopeFactory) : base(options,serviceScopeFactory)
+    public IdentityDbContext(DbContextOptions<IdentityDbContext> options, IServiceScopeFactory serviceScopeFactory) : base(options, serviceScopeFactory)
     {
     }
 
@@ -36,93 +36,93 @@ public class IdentityDbContext : BaseDbContext<IdentityDbContext>
         };
         homeMenu.UpdatePath();
         dbContext.Set<Permission>().Add(homeMenu);
-        App.ModuleAssemblies?.ForEach(module =>
-        {
-            var moduleAttribute = module.GetCustomAttribute<ModuleAttribute>();
-            var moduleName = moduleAttribute!.Name;
-            var rootMenu = new Permission
+        App.Assemblies
+            .Where(o => o.GetCustomAttributes<ModuleAttribute>().Any())
+            .ForEach(module =>
             {
-                Type = PermissionType.Module,
-                Number = moduleName,
-                Name = localizer[moduleName],
-                Icon = moduleAttribute.Icon,
-                DisplayOrder = moduleAttribute.Order,
-                Path = $"/{moduleName.ToSlugify()}",
-                Url = $"/{moduleName.ToSlugify()}/"
-            };
-            //
-            module.GetTypes()
-            .Where(o => !o.IsAbstract && o.IsAssignableTo(typeof(IResource)) && !o.IsAssignableTo(typeof(IAssociation)))
-            .ForEach(resourceType =>
-            {
-                var columns = resourceType.GetProperties()
-                .Where(o => o.PropertyType.IsValueType || o.PropertyType == typeof(string))
-                .OrderBy(o => o.GetCustomAttribute<DisplayAttribute>()?.GetOrder())
-                .Select(o => new { PropertyName = o.Name, DisplayName = o.GetDisplayName() })
-                .ToArray();
-                var displayOrder = resourceType.GetCustomAttribute<DisplayAttribute>()?.GetOrder() ?? 0;
-                var resourceMenu = new Permission
+                var moduleAttribute = module.GetCustomAttribute<ModuleAttribute>();
+                var moduleName = moduleAttribute!.Name;
+                var rootMenu = new Permission
                 {
-                    Type = PermissionType.Resource,
-                    Number = $"{rootMenu.Number}.{resourceType.Name}",
-                    Name = resourceType.GetDisplayName(),
-                    DisplayOrder = displayOrder,
-                    Path = $"{resourceType.Name.ToSlugify()}",
-                    Redirect = "index",
-                    Url = $"/{moduleName.ToSlugify()}/{resourceType.Name.ToSlugify()}/index",
-                    Columns = JsonSerializer.Serialize(columns)
+                    Type = PermissionType.Module,
+                    Number = moduleName,
+                    Name = localizer[moduleName],
+                    Icon = moduleAttribute.Icon,
+                    DisplayOrder = moduleAttribute.Order,
+                    Path = $"/{moduleName.ToSlugify()}",
+                    Url = $"/{moduleName.ToSlugify()}/"
                 };
                 //
-                var groupAttribute = resourceType.GetCustomAttributes().FirstOrDefault(a => a.GetType().IsAssignableTo(typeof(IGroupAttribute))) as IGroupAttribute;
-                if (groupAttribute != null)
+                module.GetTypes()
+                .Where(o => !o.IsAbstract && o.IsAssignableTo(typeof(IResource)) && !o.IsAssignableTo(typeof(IAssociation)))
+                .ForEach(resourceType =>
                 {
-                    var groupMenuNumber = $"{rootMenu.Number}.{groupAttribute.Name}";
-                    var groupMenu = rootMenu.Children.FirstOrDefault(o => o.Number == groupMenuNumber);
-                    if (groupMenu == null)
+                    var columns = resourceType.GetProperties()
+                    .Where(o => o.PropertyType.IsValueType || o.PropertyType == typeof(string))
+                    .OrderBy(o => o.GetCustomAttribute<DisplayAttribute>()?.GetOrder())
+                    .Select(o => new { PropertyName = o.Name, DisplayName = o.GetDisplayName() })
+                    .ToArray();
+                    var displayOrder = resourceType.GetCustomAttribute<DisplayAttribute>()?.GetOrder() ?? 0;
+                    var resourceMenu = new Permission
                     {
-                        groupMenu = new Permission
-                        {
-                            Type = PermissionType.Resource,
-                            Number = groupMenuNumber,
-                            Name = localizer[groupAttribute.Name],
-                            Icon = groupAttribute.Icon,
-                            DisplayOrder = groupAttribute.DisplayOrder,
-                            Path = $"{groupAttribute.Name.ToSlugify()}",
-                            Url = $"/{moduleName.ToSlugify()}/{groupAttribute.Name.ToSlugify()}/"
-                        };
-                        rootMenu.Children.Add(groupMenu);
-                    }
-                    groupMenu.Children.Add(resourceMenu);
-                    resourceMenu.Number = $"{groupMenu.Number}.{resourceType.Name}";
-                    resourceMenu.Url = $"{groupMenu.Path}{resourceType.Name.ToSlugify()}/index";
-                }
-                else
-                {
-                    rootMenu.Children.Add(resourceMenu);
-                }
-                resourceType.GetCustomAttributes(true).ForEach(attribute =>
-                {
-                    var actionAttribute = attribute as BaseActionAttribute;
-                    if (actionAttribute != null)
+                        Type = PermissionType.Resource,
+                        Number = $"{rootMenu.Number}.{resourceType.Name}",
+                        Name = resourceType.GetDisplayName(),
+                        DisplayOrder = displayOrder,
+                        Path = $"{resourceType.Name.ToSlugify()}",
+                        Redirect = "index",
+                        Url = $"/{moduleName.ToSlugify()}/{resourceType.Name.ToSlugify()}/index",
+                        Columns = JsonSerializer.Serialize(columns)
+                    };
+                    //
+                    if (resourceType.GetCustomAttributes().FirstOrDefault(a => a.GetType().IsAssignableTo(typeof(IGroupAttribute))) is IGroupAttribute groupAttribute)
                     {
-                        var actionMenu = new Permission
+                        var groupMenuNumber = $"{rootMenu.Number}.{groupAttribute.Name}";
+                        var groupMenu = rootMenu.Children.FirstOrDefault(o => o.Number == groupMenuNumber);
+                        if (groupMenu == null)
                         {
-                            Type = PermissionType.Action,
-                            Number = $"{resourceMenu.Number}.{actionAttribute.Name}",
-                            Name = localizer[actionAttribute.Name],
-                            Path = $"{actionAttribute.Name.ToSlugify()}",
-                            Url = $"{resourceMenu.Url}/{actionAttribute.Name.ToSlugify()}",
-                            Icon = actionAttribute.Icon,
-                            DisplayOrder = actionAttribute.DisplayOrder
-                        };
-                        resourceMenu.Children.Add(actionMenu);
+                            groupMenu = new Permission
+                            {
+                                Type = PermissionType.Resource,
+                                Number = groupMenuNumber,
+                                Name = localizer[groupAttribute.Name],
+                                Icon = groupAttribute.Icon,
+                                DisplayOrder = groupAttribute.DisplayOrder,
+                                Path = $"{groupAttribute.Name.ToSlugify()}",
+                                Url = $"/{moduleName.ToSlugify()}/{groupAttribute.Name.ToSlugify()}/"
+                            };
+                            rootMenu.Children.Add(groupMenu);
+                        }
+                        groupMenu.Children.Add(resourceMenu);
+                        resourceMenu.Number = $"{groupMenu.Number}.{resourceType.Name}";
+                        resourceMenu.Url = $"{groupMenu.Path}{resourceType.Name.ToSlugify()}/index";
                     }
+                    else
+                    {
+                        rootMenu.Children.Add(resourceMenu);
+                    }
+                    resourceType.GetCustomAttributes(true).ForEach(attribute =>
+                    {
+                        if (attribute is BaseActionAttribute actionAttribute)
+                        {
+                            var actionMenu = new Permission
+                            {
+                                Type = PermissionType.Action,
+                                Number = $"{resourceMenu.Number}.{actionAttribute.Name}",
+                                Name = localizer[actionAttribute.Name],
+                                Path = $"{actionAttribute.Name.ToSlugify()}",
+                                Url = $"{resourceMenu.Url}/{actionAttribute.Name.ToSlugify()}",
+                                Icon = actionAttribute.Icon,
+                                DisplayOrder = actionAttribute.DisplayOrder
+                            };
+                            resourceMenu.Children.Add(actionMenu);
+                        }
+                    });
                 });
+                //
+                rootMenu.UpdatePath();
+                dbContext.Set<Permission>().Add(rootMenu);
             });
-            //
-            rootMenu.UpdatePath();
-            dbContext.Set<Permission>().Add(rootMenu);
-        });
         dbContext.SaveChanges();
         //
         //var resourceTypes = App.ModuleAssemblies?

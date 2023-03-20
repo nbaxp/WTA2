@@ -1,5 +1,4 @@
 using System.ComponentModel.DataAnnotations;
-using WTA.Application.Abstractions;
 using WTA.Application.Abstractions.Data;
 
 namespace WTA.Application.Domain;

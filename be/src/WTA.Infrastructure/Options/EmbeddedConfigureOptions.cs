@@ -14,7 +14,7 @@ public class EmbeddedConfigureOptions : IPostConfigureOptions<StaticFileOptions>
         {
             new ManifestEmbeddedFileProvider(typeof(Resource).Assembly, "wwwroot")
         };
-        App.ModuleAssemblies?
+        App.Assemblies?
             .ForEach(o =>
             {
                 try

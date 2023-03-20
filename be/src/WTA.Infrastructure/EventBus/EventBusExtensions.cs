@@ -14,7 +14,7 @@ public static class EventBusExtensions
     public static void AddEventBus<T>(this IServiceCollection services) where T : class, IEventPublisher
     {
         services.AddTransient<IEventPublisher, T>();
-        App.ModuleAssemblies?
+        App.Assemblies?
             .Where(o => o.GetTypes().Any(o => o.IsAssignableFrom(typeof(IEventHander<>))))
             .SelectMany(o => o.GetTypes())
             .Where(t => t.GetInterfaces().Any(o => o.IsGenericType && o.GetGenericTypeDefinition() == typeof(IEventHander<>)))

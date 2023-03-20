@@ -45,9 +45,9 @@ public class BaseService
             FinalizationPendingCount = gcMemoryInfo.FinalizationPendingCount,
             HeapSizeBytes = gcMemoryInfo.HeapSizeBytes,
             ProcessMemory = CurrentProcess.WorkingSet64,
-            OnlineUsers= PageHub.Count,
+            OnlineUsers = PageHub.Count,
             HandleCount = CurrentProcess.HandleCount
         };
-         return model;//CurrentProcess.Threads.h
+        return model;//CurrentProcess.Threads.h
     }
 }

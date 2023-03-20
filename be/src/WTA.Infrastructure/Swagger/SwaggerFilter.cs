@@ -90,8 +90,9 @@ public class SwaggerFilter : IDocumentFilter, IOperationFilter
             operation.Parameters.Add(new OpenApiParameter()
             {
                 Name = "X-Accept",
-                In= ParameterLocation.Header,
-                Schema= new OpenApiSchema() {
+                In = ParameterLocation.Header,
+                Schema = new OpenApiSchema()
+                {
                     Type = "string",
                     Default = new OpenApiString("application/json")
                 }

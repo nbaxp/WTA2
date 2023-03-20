@@ -11,7 +11,7 @@ using WTA.Application.Extensions;
 
 namespace WTA.Application.Abstractions.Data;
 
-public abstract class BaseDbContext<T> : DbContext, IDbSeed where T : DbContext
+public abstract class BaseDbContext<T> : DbContext where T : DbContext
 {
     public static readonly ILoggerFactory DefaultLoggerFactory = LoggerFactory.Create(builder => { builder.AddConsole(); });
 
@@ -19,12 +19,12 @@ public abstract class BaseDbContext<T> : DbContext, IDbSeed where T : DbContext
 
     public BaseDbContext(DbContextOptions<T> options, IServiceScopeFactory serviceProvider) : base(options)
     {
-        _serviceProvider = serviceProvider;
+        this._serviceProvider = serviceProvider;
     }
 
     public override int SaveChanges()
     {
-        using var scope = _serviceProvider.CreateScope();
+        using var scope = this._serviceProvider.CreateScope();
         var services = scope.ServiceProvider;
         var entries = GetEntries();
         BeforeSave(entries, services);
@@ -34,7 +34,7 @@ public abstract class BaseDbContext<T> : DbContext, IDbSeed where T : DbContext
 
     public override async Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
     {
-        using var scope = _serviceProvider.CreateScope();
+        using var scope = this._serviceProvider.CreateScope();
         var services = scope.ServiceProvider;
         var entries = GetEntries();
         BeforeSave(entries, services);
@@ -44,16 +44,12 @@ public abstract class BaseDbContext<T> : DbContext, IDbSeed where T : DbContext
 
     public override async Task<int> SaveChangesAsync(bool acceptAllChangesOnSuccess, CancellationToken cancellationToken = default)
     {
-        using var scope = _serviceProvider.CreateScope();
+        using var scope = this._serviceProvider.CreateScope();
         var services = scope.ServiceProvider;
         var entries = GetEntries();
         BeforeSave(entries, services);
         var result = await base.SaveChangesAsync(acceptAllChangesOnSuccess, cancellationToken).ConfigureAwait(false);
         return result;
-    }
-
-    public virtual void Seed()
-    {
     }
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
@@ -128,7 +124,7 @@ public abstract class BaseDbContext<T> : DbContext, IDbSeed where T : DbContext
                 modelBuilder.Entity(item.ClrType).HasIndex(nameof(BaseTreeEntity<BaseEntity>.Number)).IsUnique();
             }
             // 配置多租户
-            using var scope = _serviceProvider.CreateScope();
+            using var scope = this._serviceProvider.CreateScope();
             var services = scope.ServiceProvider;
             var tenant = services.GetRequiredService<ITenantService>().Tenant;
             var tenantProperty = item.FindProperty("Tenant");

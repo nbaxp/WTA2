@@ -43,11 +43,11 @@ public class JsonStringLocalizer : IStringLocalizer
     private Dictionary<string, string> GetAll()
     {
         var key = $"{nameof(JsonStringLocalizer)}.{Thread.CurrentThread.CurrentCulture.Name}";
-        var result = _cache.Get<Dictionary<string, string>>(key);
+        var result = this._cache.Get<Dictionary<string, string>>(key);
         if (result == null)
         {
             result = new Dictionary<string, string>();
-            App.ModuleAssemblies?
+            App.Assemblies?
            //.Concat(new Assembly[] { typeof(Resource).Assembly })
            .OrderBy(o => o.FullName!.Length)
            .ToList()
@@ -76,7 +76,7 @@ public class JsonStringLocalizer : IStringLocalizer
         {
             return value;
         }
-        if (key.Contains('.') && _dictionary.TryGetValue(key.Substring(key.IndexOf('.') + 1), out var value2))
+        if (key.Contains('.') && _dictionary.TryGetValue(key[(key.IndexOf('.') + 1)..], out var value2))
         {
             return value2;
         }

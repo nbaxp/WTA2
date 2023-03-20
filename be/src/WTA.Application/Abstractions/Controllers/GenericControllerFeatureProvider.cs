@@ -13,7 +13,7 @@ public class GenericControllerFeatureProvider : IApplicationFeatureProvider<Cont
     {
         var stopWatch = new Stopwatch();
         stopWatch.Start();
-        var typeInfos = App.ModuleAssemblies!
+        var typeInfos = App.Assemblies!
             .SelectMany(o => o.GetTypes())
             .Where(o => !o.IsAbstract && o.IsAssignableTo(typeof(IResource)))
             .Select(o => o.GetTypeInfo())

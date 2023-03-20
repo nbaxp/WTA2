@@ -67,20 +67,8 @@ public class WebApp
         foreach (var item in dlls)
         {
             // Assembly.LoadFile 会导致 EFCore 报错：Cannot create DbSet for entity type
-            App.ModuleAssemblies.Add(Assembly.LoadFrom(item));
+            App.Assemblies.Add(Assembly.LoadFrom(item));
         }
-
-        //App.ModuleAssemblies = AppDomain.CurrentDomain.GetAssemblies()
-        //    .Where(o => o.GetCustomAttributes<ModuleAttribute>().Any())
-        //    .OrderBy(o => o.GetCustomAttribute<ModuleAttribute>()!.Order)
-        //    .ToList();
-
-        App.StartupList = App.ModuleAssemblies
-                .Where(o=>o.GetCustomAttributes<ModuleAttribute>().Any())
-                .SelectMany(o => o.GetTypes())
-                .Where(o => typeof(IStartup).IsAssignableFrom(o))
-                .Select(o => (Activator.CreateInstance(o) as IStartup)!)
-                .ToList();
     }
 
     public string Name { get; }
@@ -144,6 +132,12 @@ public class WebApp
         try
         {
             Log.Information($"{this.Name} start");
+            var startupList = App.Assemblies
+                .Where(o => o.GetCustomAttributes<ModuleAttribute>().Any())
+                .SelectMany(o => o.GetTypes())
+                .Where(o => typeof(IStartup).IsAssignableFrom(o))
+                .Select(o => (Activator.CreateInstance(o) as IStartup)!)
+                .ToList();
             var builder = WebApplication.CreateBuilder(args);
             builder.Host.UseSerilog((hostingContext, services, configBuilder) =>
             {
@@ -154,12 +148,12 @@ public class WebApp
             }, writeToProviders: true);
             this.ConfigureServices(builder);
             configureBuilder?.Invoke(builder);
-            App.StartupList?.ForEach(o => o.ConfigureServices(builder));
+            startupList?.ForEach(o => o.ConfigureServices(builder));
             var app = builder.Build();
             app.UseSerilogRequestLogging();
             this.Configure(app);
             configureApp?.Invoke(app);
-            App.StartupList?.ForEach(o => o.Configure(app));
+            startupList?.ForEach(o => o.Configure(app));
             app.Run();
         }
         catch (Exception ex)
@@ -332,9 +326,9 @@ public class WebApp
     {
         var dbConnectionName = builder.Configuration.GetConnectionString("DefaultDatabase");
         var connectionString = builder.Configuration.GetConnectionString(dbConnectionName!);
-        App.ModuleAssemblies!.ForEach(assembly =>
+        App.Assemblies!.ForEach(assembly =>
         {
-            assembly.GetTypes().Where(type =>!type.IsAbstract && type.IsAssignableTo(typeof(DbContext))).ForEach(contextType =>
+            assembly.GetTypes().Where(type => !type.IsAbstract && type.IsAssignableTo(typeof(DbContext))).ForEach(contextType =>
             {
                 var optionsType = typeof(DbContextOptions<>).MakeGenericType(contextType);
                 builder.Services.AddScoped(optionsType, o =>
@@ -527,7 +521,7 @@ public class WebApp
         using var metaContext = scope.ServiceProvider.GetRequiredService<MetaDbContext>();
         if (metaContext.Database.EnsureCreated())
         {
-            metaContext.Seed();
+            metaContext.Seed(metaContext);
             //metaContext.SaveChanges();
         }
         var contextList = scope.ServiceProvider.GetServices<DbContext>().Where(o => o.GetType().Name != nameof(MetaDbContext));
@@ -549,7 +543,7 @@ public class WebApp
                 if (history == null)
                 {
                     context.Database.ExecuteSqlRaw(sql);
-                    (context as IDbSeed)?.Seed();
+                    (context as IDbSeed)?.Seed(context);
                     metaContext.Set<DbContextHistory>().Add(new DbContextHistory { Provider = context?.Database.ProviderName!, Name = name, Hash = hash, Sql = sql! });
                     metaContext.SaveChanges();
                     context?.SaveChanges();
