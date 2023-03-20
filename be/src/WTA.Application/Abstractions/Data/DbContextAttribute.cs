@@ -1,4 +1,4 @@
-namespace WTA.Application.Abstractions;
+namespace WTA.Application.Abstractions.Data;
 
 [AttributeUsage(AttributeTargets.Class, AllowMultiple = true)]
 public class BaseContextAttribute : Attribute

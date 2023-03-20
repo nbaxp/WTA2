@@ -2,6 +2,7 @@ using System.Reflection;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using WTA.Application.Abstractions;
+using WTA.Application.Abstractions.Data;
 using WTA.Application.Domain;
 
 namespace WTA.Infrastructure.Data;

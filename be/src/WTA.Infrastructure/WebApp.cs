@@ -21,6 +21,8 @@ using Microsoft.AspNetCore.Routing;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.AspNetCore.StaticFiles;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Storage;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -35,8 +37,10 @@ using Swashbuckle.AspNetCore.SwaggerGen;
 using WTA.Application;
 using WTA.Application.Abstractions;
 using WTA.Application.Abstractions.Controllers;
+using WTA.Application.Abstractions.Data;
 using WTA.Application.Abstractions.SignalR;
 using WTA.Application.Application;
+using WTA.Application.Domain;
 using WTA.Application.Extensions;
 using WTA.Application.Resources;
 using WTA.Infrastructure.Authentication;
@@ -63,29 +67,25 @@ public class WebApp
         foreach (var item in dlls)
         {
             // Assembly.LoadFile 会导致 EFCore 报错：Cannot create DbSet for entity type
-            Assembly.LoadFrom(item);
+            App.ModuleAssemblies.Add(Assembly.LoadFrom(item));
         }
 
-        App.ModuleAssemblies = AppDomain.CurrentDomain.GetAssemblies()
-            .Where(o => o.GetCustomAttributes<ModuleAttribute>().Any())
-            .OrderBy(o => o.GetCustomAttribute<ModuleAttribute>()!.Order)
-            .ToList();
+        //App.ModuleAssemblies = AppDomain.CurrentDomain.GetAssemblies()
+        //    .Where(o => o.GetCustomAttributes<ModuleAttribute>().Any())
+        //    .OrderBy(o => o.GetCustomAttribute<ModuleAttribute>()!.Order)
+        //    .ToList();
 
         App.StartupList = App.ModuleAssemblies
+                .Where(o=>o.GetCustomAttributes<ModuleAttribute>().Any())
                 .SelectMany(o => o.GetTypes())
                 .Where(o => typeof(IStartup).IsAssignableFrom(o))
                 .Select(o => (Activator.CreateInstance(o) as IStartup)!)
                 .ToList();
-
-        App.DbContextList = App.ModuleAssemblies
-            .SelectMany(o => o.GetTypes())
-            .Where(o => typeof(IDbContext).IsAssignableFrom(o))
-            .Select(o => (Activator.CreateInstance(o) as IDbContext)!)
-            .ToList();
     }
 
     public string Name { get; }
     public string OSPlatformName { get; }
+
     public virtual void Configure(WebApplication app)
     {
         App.Configuration = app.Configuration;
@@ -96,7 +96,7 @@ public class WebApp
         UseLocalization(app);
         UseSwagger(app);
         UseAuthorization(app);
-        UseDatabase(app);
+        UseDbContext(app);
         UseSignalR<PageHub>(app);
     }
 
@@ -188,6 +188,7 @@ public class WebApp
     {
         app.MapHub<T>(pattern);
     }
+
     #region add services
 
     /// <summary>
@@ -247,6 +248,7 @@ public class WebApp
                 }
             });
     }
+
     protected virtual void AddAuthentication(WebApplicationBuilder builder)
     {
         builder.Services.AddSingleton<CustomJwtSecurityTokenHandler>();
@@ -330,29 +332,37 @@ public class WebApp
     {
         var dbConnectionName = builder.Configuration.GetConnectionString("DefaultDatabase");
         var connectionString = builder.Configuration.GetConnectionString(dbConnectionName!);
-        App.ModuleAssemblies!.ForEach(a =>
+        App.ModuleAssemblies!.ForEach(assembly =>
         {
-            a.GetTypes().Where(t => t.IsAssignableTo(typeof(DbContext))).ForEach(t =>
+            assembly.GetTypes().Where(type =>!type.IsAbstract && type.IsAssignableTo(typeof(DbContext))).ForEach(contextType =>
             {
-                builder.Services.AddScoped(t);
+                var optionsType = typeof(DbContextOptions<>).MakeGenericType(contextType);
+                builder.Services.AddScoped(optionsType, o =>
+                {
+                    var optionsBuilderType = typeof(DbContextOptionsBuilder<>).MakeGenericType(contextType);
+                    var optionsBuilder = Activator.CreateInstance(optionsBuilderType) as DbContextOptionsBuilder;
+                    var values = builder.Configuration.GetConnectionString($"{contextType.Name}")?.Split(':');
+                    if (values != null)
+                    {
+                        var database = values[0];
+                        var connectionString = values[1];
+                        if (database == "mysql")
+                        {
+                            optionsBuilder?.UseMySql(values[1], ServerVersion.AutoDetect(connectionString));
+                        }
+                        else if (database == "sqlite")
+                        {
+                            optionsBuilder?.UseSqlite(connectionString);
+                        }
+                    }
+                    return optionsBuilder?.Options!;
+                });
+                builder.Services.AddScoped(contextType);
+                builder.Services.AddScoped(typeof(DbContext), contextType);
             });
         });
         //builder.Services.AddScoped<DbContext, BaseDbContext>();
         builder.Services.AddScoped(typeof(IRepository<>), typeof(EfRepository<>));
-        //var dbConnectionName = builder.Configuration.GetConnectionString("DefaultDatabase");
-        //var connectionString = builder.Configuration.GetConnectionString(dbConnectionName!);
-        //builder.Services.AddDbContext<BaseDbContext>( ServiceLifetime.Scoped,
-        //    options =>
-        //    {
-        //        if (dbConnectionName!.ToLowerInvariant() == "mysql")
-        //        {
-        //            options.UseMySql(connectionString, ServerVersion.AutoDetect(connectionString));
-        //        }
-        //        else
-        //        {
-        //            options.UseSqlite(connectionString);
-        //        }
-        //    });
     }
 
     protected virtual void AddHttp(WebApplicationBuilder builder)
@@ -511,15 +521,54 @@ public class WebApp
         app.UseAuthorization();
     }
 
-    protected virtual void UseDatabase(WebApplication app)
+    protected virtual void UseDbContext(WebApplication app)
     {
-        //using var scope = app.Services.CreateScope();
-        //using var dbContext = scope.ServiceProvider.GetRequiredService<DbContext>();
-        //if (dbContext.Database.EnsureCreated())
-        //{
-        //    (dbContext as BaseDbContext)?.Seed();
-        //    App.DbContextList?.ForEach(o => o.Seed(dbContext));
-        //}
+        using var scope = app.Services.CreateScope();
+        using var metaContext = scope.ServiceProvider.GetRequiredService<MetaDbContext>();
+        if (metaContext.Database.EnsureCreated())
+        {
+            metaContext.Seed();
+            //metaContext.SaveChanges();
+        }
+        var contextList = scope.ServiceProvider.GetServices<DbContext>().Where(o => o.GetType().Name != nameof(MetaDbContext));
+        foreach (var context in contextList)
+        {
+            var name = context.GetType().FullName!;
+            var dbCreator = (context.GetService<IRelationalDatabaseCreator>() as RelationalDatabaseCreator)!;
+            var sql = dbCreator.GenerateCreateScript();
+            var dbExists = dbCreator.Exists();
+            if (!dbExists)
+            {
+                dbCreator.Create();
+            }
+            using var transaction = context.Database.BeginTransaction();
+            try
+            {
+                var history = metaContext.Set<DbContextHistory>().FirstOrDefault(o => o.Name == name);
+                var hash = sql.Md5()!;
+                if (history == null)
+                {
+                    context.Database.ExecuteSqlRaw(sql);
+                    (context as IDbSeed)?.Seed();
+                    metaContext.Set<DbContextHistory>().Add(new DbContextHistory { Provider = context?.Database.ProviderName!, Name = name, Hash = hash, Sql = sql! });
+                    metaContext.SaveChanges();
+                    context?.SaveChanges();
+                }
+                else
+                {
+                    if (history.Hash != hash)
+                    {
+                        Console.WriteLine($"error:{name},{hash},{history.Hash}");
+                    }
+                }
+                transaction.Commit();
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.ToString());
+                transaction.Rollback();
+            }
+        }
     }
 
     protected virtual void UseLocalization(WebApplication app)

@@ -1,10 +1,8 @@
 using System.Globalization;
-using System.Reflection;
 using System.Text.Json;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Localization;
 using WTA.Application;
-using WTA.Application.Resources;
 
 namespace WTA.Infrastructure.Localization;
 
@@ -50,7 +48,8 @@ public class JsonStringLocalizer : IStringLocalizer
         {
             result = new Dictionary<string, string>();
             App.ModuleAssemblies?
-           .Concat(new Assembly[] { typeof(Resource).Assembly })
+           //.Concat(new Assembly[] { typeof(Resource).Assembly })
+           .OrderBy(o => o.FullName!.Length)
            .ToList()
            .ForEach(assembly =>
            {

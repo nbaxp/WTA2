@@ -1,11 +1,20 @@
 using System.Diagnostics;
 using System.Globalization;
+using System.Security.Cryptography;
+using System.Text;
 using System.Text.RegularExpressions;
 
 namespace WTA.Application.Extensions;
 
 public static class StringExtensions
 {
+    public static string Md5(this string input)
+    {
+        using (var md5 = MD5.Create())
+        {
+            return BitConverter.ToString(md5.ComputeHash(Encoding.ASCII.GetBytes(input))).Replace("-", "");
+        }
+    }
     public static string ToLowerCamelCase(this string input)
     {
         if (string.IsNullOrEmpty(input) || !char.IsUpper(input[0]))

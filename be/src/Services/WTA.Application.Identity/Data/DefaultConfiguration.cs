@@ -1,9 +1,11 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
+using WTA.Application.Abstractions.Data;
 using WTA.Application.Identity.Domain.SystemManagement;
 
 namespace WTA.Application.Identity.Data;
 
+[DbContext<IdentityDbContext>]
 public class DefaultConfiguration :
     IEntityTypeConfiguration<Department>,
     IEntityTypeConfiguration<User>,

@@ -5,22 +5,19 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.ChangeTracking;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using WTA.Application;
-using WTA.Application.Abstractions;
-using WTA.Application.Abstractions.EventBus;
 using WTA.Application.Application;
 using WTA.Application.Domain;
 using WTA.Application.Extensions;
 
-namespace WTA.Infrastructure.Data;
+namespace WTA.Application.Abstractions.Data;
 
-public class BaseDbContext<T> : DbContext where T : DbContext
+public abstract class BaseDbContext<T> : DbContext, IDbSeed where T : DbContext
 {
     public static readonly ILoggerFactory DefaultLoggerFactory = LoggerFactory.Create(builder => { builder.AddConsole(); });
 
     private readonly IServiceScopeFactory _serviceProvider;
 
-    public BaseDbContext(IServiceScopeFactory serviceProvider)
+    public BaseDbContext(DbContextOptions<T> options, IServiceScopeFactory serviceProvider) : base(options)
     {
         _serviceProvider = serviceProvider;
     }
@@ -32,7 +29,6 @@ public class BaseDbContext<T> : DbContext where T : DbContext
         var entries = GetEntries();
         BeforeSave(entries, services);
         var result = base.SaveChanges();
-        AfterSave(entries, services);
         return result;
     }
 
@@ -43,7 +39,6 @@ public class BaseDbContext<T> : DbContext where T : DbContext
         var entries = GetEntries();
         BeforeSave(entries, services);
         var result = await base.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
-        AfterSave(entries, services);
         return result;
     }
 
@@ -54,7 +49,6 @@ public class BaseDbContext<T> : DbContext where T : DbContext
         var entries = GetEntries();
         BeforeSave(entries, services);
         var result = await base.SaveChangesAsync(acceptAllChangesOnSuccess, cancellationToken).ConfigureAwait(false);
-        AfterSave(entries, services);
         return result;
     }
 
@@ -64,7 +58,6 @@ public class BaseDbContext<T> : DbContext where T : DbContext
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {
-        App.DbContextList?.ForEach(o => o.OnConfiguring(optionsBuilder));
         optionsBuilder.UseLoggerFactory(DefaultLoggerFactory);
         optionsBuilder.EnableSensitiveDataLogging();
         optionsBuilder.EnableDetailedErrors();
@@ -72,15 +65,28 @@ public class BaseDbContext<T> : DbContext where T : DbContext
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
-        // 默认创建 DbContext 的 History 表
-        App.DbContextList?.ForEach(o =>
-        {
-            o.OnModelCreating(modelBuilder);
-            modelBuilder.ApplyConfigurationsFromAssembly(o.GetType().Assembly);
-        });
-        //
-        modelBuilder.Entity<DbContextHistory>();
-        modelBuilder.Entity<EntityEvent>();
+        var applyEntityConfigurationMethod = typeof(ModelBuilder)
+            .GetMethods()
+            .Single(
+                e => e.Name == nameof(modelBuilder.ApplyConfiguration)
+                    && e.ContainsGenericParameters
+                    && e.GetParameters().SingleOrDefault()?.ParameterType.GetGenericTypeDefinition()
+                    == typeof(IEntityTypeConfiguration<>));
+        var list = GetType().Assembly.GetTypes()
+            .Where(t => t.GetInterfaces().Any(o => o.IsGenericType && o.GetGenericTypeDefinition() == typeof(IEntityTypeConfiguration<>)))
+            .Where(t => t.GetCustomAttributes().Any(o => o.GetType().IsGenericType && o.GetType().GetGenericTypeDefinition() == typeof(DbContextAttribute<>))).ToList();
+        GetType().Assembly.GetTypes()
+            .Where(t => t.GetInterfaces().Any(o => o.IsGenericType && o.GetGenericTypeDefinition() == typeof(IEntityTypeConfiguration<>)))
+            .Where(t => t.GetCustomAttributes().Any(o => o.GetType().IsGenericType && o.GetType().GetGenericTypeDefinition() == typeof(DbContextAttribute<>)))
+            .ForEach(t =>
+            {
+                var config = Activator.CreateInstance(t)!;
+                t.GetInterfaces().Where(o => o.IsGenericType && o.GetGenericTypeDefinition() == typeof(IEntityTypeConfiguration<>))
+                .ForEach(t =>
+                {
+                    applyEntityConfigurationMethod.MakeGenericMethod(t.GetGenericArguments()[0]).Invoke(modelBuilder, new object[] { config });
+                });
+            });
         //
         foreach (var item in modelBuilder.Model.GetEntityTypes().Where(o => o.ClrType.IsAssignableTo(typeof(BaseEntity))).ToList())
         {
@@ -135,32 +141,7 @@ public class BaseDbContext<T> : DbContext where T : DbContext
         }
     }
 
-    private static void AfterSave(List<EntityEntry> entries, IServiceProvider services)
-    {
-        foreach (var entry in entries)
-        {
-            if (entry.Entity.GetType() != typeof(EntityEvent))
-            {
-                var events = new List<object>();
-                if (entry.State == EntityState.Added)
-                {
-                    events.Add(Activator.CreateInstance(typeof(EntityCreatedEvent<>).MakeGenericType(entry.Entity.GetType()), entry.Entity)!);
-                }
-                else if (entry.State == EntityState.Modified)
-                {
-                    events.Add(Activator.CreateInstance(typeof(EntityUpdatedEvent<>).MakeGenericType(entry.Entity.GetType()), entry.Entity, entry.OriginalValues.ToObject())!);
-                }
-                else if (entry.State == EntityState.Deleted)
-                {
-                    events.Add(Activator.CreateInstance(typeof(EntityDeletedEvent<>).MakeGenericType(entry.Entity.GetType()), entry.Entity)!);
-                }
-                var publisher = services.GetRequiredService<IEventPublisher>();
-                events.ForEach(o => publisher.Publish(o));
-            }
-        }
-    }
-
-    private void BeforeSave(List<EntityEntry> entries, IServiceProvider services)
+    protected virtual void BeforeSave(List<EntityEntry> entries, IServiceProvider services)
     {
         var userName = services.GetRequiredService<IHttpContextAccessor>().HttpContext?.User.Identity?.Name;
         var tenant = services.GetRequiredService<ITenantService>().Tenant;
@@ -183,22 +164,6 @@ public class BaseDbContext<T> : DbContext where T : DbContext
                 if (item.State != EntityState.Deleted)
                 {
                     entity.ConcurrencyStamp = Guid.NewGuid().ToString();
-                }
-                if (item.Entity.GetType() != typeof(EntityEvent))
-                {
-                    if (item.State == EntityState.Added || item.State == EntityState.Modified || item.State == EntityState.Deleted)
-                    {
-                        this.Set<EntityEvent>().Add(new EntityEvent
-                        {
-                            Date = DateTimeOffset.Now,
-                            Entity = item.Entity.GetType().Name,
-                            EventType = item.State.ToString(),
-                            Original = item.State == EntityState.Added ? null : item.OriginalValues.ToObject().ToJson(),
-                            Current = item.State == EntityState.Deleted ? null : item.Entity.ToJson(),
-                            CreatedAt = DateTimeOffset.Now,
-                            CreatedBy = userName,
-                        });
-                    }
                 }
             }
         }

@@ -5,17 +5,17 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Localization;
 using WTA.Application.Abstractions;
+using WTA.Application.Abstractions.Data;
 using WTA.Application.Application;
 using WTA.Application.Domain;
 using WTA.Application.Extensions;
 using WTA.Application.Identity.Domain.SystemManagement;
-using WTA.Infrastructure.Data;
 
 namespace WTA.Application.Identity.Data;
 
 public class IdentityDbContext : BaseDbContext<IdentityDbContext>
 {
-    public IdentityDbContext(IServiceScopeFactory serviceScopeFactory) : base(serviceScopeFactory)
+    public IdentityDbContext(DbContextOptions<IdentityDbContext> options,IServiceScopeFactory serviceScopeFactory) : base(options,serviceScopeFactory)
     {
     }
 

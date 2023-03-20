@@ -10,7 +10,6 @@ public class App
     public static IServiceProvider? Services { get; set; }
     public static IConfiguration? Configuration { get; set; }
     public static ILogger? Logger { get; set; }
-    public static List<Assembly>? ModuleAssemblies { get; set; }
-    public static List<IDbContext>? DbContextList { get; set; }
+    public static List<Assembly> ModuleAssemblies { get; set; } = new List<Assembly>();
     public static List<IStartup>? StartupList { get; set; }
 }

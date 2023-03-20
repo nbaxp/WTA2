@@ -1,19 +1,12 @@
 using Microsoft.EntityFrameworkCore;
-using WTA.Application.Abstractions;
+using Microsoft.Extensions.DependencyInjection;
+using WTA.Application.Abstractions.Data;
 
 namespace WTA.Application.BaseData.Data;
 
-public class BaseDataDbContext : IDbContext
+public class BaseDataDbContext : BaseDbContext<BaseDataDbContext>
 {
-    public void Seed(DbContext dbContext)
-    {
-    }
-
-    public void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-    {
-    }
-
-    public void OnModelCreating(ModelBuilder modelBuilder)
+    public BaseDataDbContext(DbContextOptions<BaseDataDbContext> options, IServiceScopeFactory serviceProvider) : base(options, serviceProvider)
     {
     }
 }
