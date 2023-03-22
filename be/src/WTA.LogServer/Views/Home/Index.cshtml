@@ -1,0 +1,29 @@
+﻿@model QueryModel
+
+<form asp-controller="Home" asp-action="Index" method="get">
+    <p>
+        @Html.EditorFor(o=>o.Query)
+        <input type="submit" value="Filter" />
+    </p>
+<table class="table">
+    <thead>
+        <tr>
+            <th>
+                @Html.DisplayNameFor(model => model.Items[0].MessageTemplate)
+            </th>
+        </tr>
+        </thead>
+    <tbody>
+        @foreach (var item in Model.Items!)
+        {
+            <tr>
+                <td>
+                    @Html.DisplayFor(modelItem => item.MessageTemplate)
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
+@Html.DropDownListFor(o=>o.PageSize,Model.PageSizeList)
+</form>
+
