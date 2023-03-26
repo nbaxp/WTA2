@@ -12,7 +12,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\WTA.Application\WTA.Application.csproj" />
+    <ProjectReference Include="..\..\Libraries\WTA.Application\WTA.Application.csproj" />
   </ItemGroup>
 
 </Project>

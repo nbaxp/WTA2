@@ -1,0 +1,16 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <TargetFramework>net7.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\Libraries\WTA.Infrastructure\WTA.Infrastructure.csproj" />
+    <ProjectReference Include="..\..\Services\Infrastructure\WTA.Application.Config\WTA.Application.Config.csproj" />
+    <ProjectReference Include="..\..\Services\Infrastructure\WTA.Application.Gateway\WTA.Application.Gateway.csproj" />
+    <ProjectReference Include="..\..\Services\Infrastructure\WTA.Application.Logging\WTA.Application.Logging.csproj" />
+  </ItemGroup>
+
+</Project>
