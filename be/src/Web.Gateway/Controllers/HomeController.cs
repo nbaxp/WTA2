@@ -34,7 +34,7 @@ public class HomeController : Controller
         this._logger.LogInformation("test log");
         if (string.IsNullOrEmpty(model.Query))
         {
-            var query = $"select time,ApplicationName,RenderedMessage from log where time>now() - {model.Days}d ";
+            var query = $"select * from log where time>now() - {model.Days}d ";
             query += $"limit {model.PageSize} offset {(model.PageIndex - 1) * model.PageSize}";
             model.Query = query;
         }

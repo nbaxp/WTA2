@@ -17,16 +17,16 @@
     <table :title="model.influxResults.results[0].series[0].name">
         <thead>
             <tr>
-                <th v-for="item in model.influxResults.results[0].series[0].columns">
-                    {{item}}
-                </th>
+                <th>时间</th>
+                <th>应用</th>
+                <th>日志</th>
             </tr>
         </thead>
         <tbody>
-            <tr v-for="row in model.influxResults.results[0].series[0].values">
-                <td v-for="item in row">
-                    {{item}}
-                </td>
+            <tr v-for="item in model.influxResults.results[0].series[0].values">
+                <td>{{new Date(item[model.influxResults.results[0].series[0].columns.indexOf('time')]).toLocaleString()}}</td>
+                <td>{{item[model.influxResults.results[0].series[0].columns.indexOf('ApplicationName')]}}</td>
+                <td>{{item[model.influxResults.results[0].series[0].columns.indexOf('RenderedMessage')]}}</td>
             </tr>
         </tbody>
     </table>
