@@ -16,8 +16,6 @@
 	<ItemGroup>
 	  <Content Remove="Resources\en.json" />
 	  <Content Remove="Resources\zh.json" />
-	  <Content Remove="wwwroot\robots.txt" />
-	  <Content Remove="wwwroot\src\components\app-list.js" />
 	</ItemGroup>
 
 	<ItemGroup>

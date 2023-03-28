@@ -1,29 +1,35 @@
 ﻿@model QueryLogModel
 
+@section scripts{
+    <script>
+        window.pageModule = {
+            model: (@Json.Serialize(Model))
+        };
+    </script>
+}
+
 <form asp-controller="Home" asp-action="Index" method="get">
     <p>
         @Html.EditorFor(o=>o.Query)
+        @Html.EditorFor(o=>o.EnalbeTail)
         <input type="submit" value="Filter" />
     </p>
-<table class="table">
-    <thead>
-        <tr>
-            <th>
-                @Html.DisplayNameFor(model => model.Items[0].MessageTemplate)
-            </th>
-        </tr>
-        </thead>
-    <tbody>
-        @foreach (var item in Model.Items!)
-        {
+    <table :title="model.influxResults.results[0].series[0].name">
+        <thead>
             <tr>
-                <td>
-                    @Html.DisplayFor(modelItem => item.MessageTemplate)
+                <th v-for="item in model.influxResults.results[0].series[0].columns">
+                    {{item}}
+                </th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr v-for="row in model.influxResults.results[0].series[0].values">
+                <td v-for="item in row">
+                    {{item}}
                 </td>
             </tr>
-        }
-    </tbody>
-</table>
-@Html.DropDownListFor(o=>o.PageSize,Model.PageSizeList)
+        </tbody>
+    </table>
+    @Html.DropDownListFor(o=>o.PageSize,Model.PageSizeList)
 </form>
 

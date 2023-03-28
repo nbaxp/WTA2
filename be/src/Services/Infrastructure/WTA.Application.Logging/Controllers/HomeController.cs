@@ -10,6 +10,7 @@ using WTA.Application.Logging.Models;
 
 namespace WTA.Application.Logging.Controllers;
 
+[Route("logging/[controller]/[action]")]
 public class HomeController : Controller
 {
     private readonly ILogger<HomeController> _logger;

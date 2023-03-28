@@ -3,9 +3,48 @@
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>@ViewData["Title"] - WTA.Logging</title>
+    <link rel="stylesheet" href="~/milligram.min.css" />
+    <title>网关、配置、日志</title>
 </head>
 <body>
-    @RenderBody()
+    <div id="app">
+      @RenderBody()
+    </div>
+    @RenderSection("scripts")
+    <script src="~/signalr.min.js"></script>
+    <script type="module">
+        import { createApp } from '@Url.Content("~/petite-vue.es.js")';
+        const app = window.pageModule;
+        const connection = new signalR.HubConnectionBuilder().withUrl('@Url.Content("~/hub")').build();
+        const connect = () => {
+            if (connection.state === signalR.HubConnectionState.Disconnected) {
+                connection
+                    .start()
+                    .then(function () {
+                        console.log('signalr connected');
+                    })
+                    .catch(function (error) {
+                        console.error(error);
+                        setTimeout(connect, 5000);
+                    });
+            }
+        };
+        connection.onclose(function () {
+            connect();
+        });
+        connection.on('Connected', function (id) {
+            window.connectionId = id;
+            setTimeout(() => {
+                connection.invoke('setTail', app.model.enalbeTail,window.connectionId).then(() => {
+                    console.log(app.model.enalbeTail);
+                });;
+            },0);
+        });
+        connection.on('notify', function (results) {
+            console.log(results);
+        });
+        connect();
+        createApp(app).mount('#app');
+    </script>    
 </body>
 </html>

@@ -10,11 +10,6 @@
 
   <ItemGroup>
     <FrameworkReference Include="Microsoft.AspNetCore.App" />
-    <EmbeddedResource Include="wwwroot\**"></EmbeddedResource>
-  </ItemGroup>
-
-  <ItemGroup>
-    <EmbeddedResource Include="Resources\zh.json" />
   </ItemGroup>
 
   <ItemGroup>
@@ -23,10 +18,6 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\..\Libraries\WTA.Application\WTA.Application.csproj" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Folder Include="wwwroot\" />
   </ItemGroup>
 
 </Project>
