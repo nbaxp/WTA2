@@ -3,7 +3,6 @@ using Microsoft.AspNetCore.SignalR;
 public class PageHub : Hub
 {
     private readonly ILogger<PageHub> _logger;
-    private readonly object balanceLock = new object();
 
     public PageHub(ILogger<PageHub> logger)
     {
@@ -14,7 +13,7 @@ public class PageHub : Hub
     {
         this._logger.LogInformation($"{Context.ConnectionId} has connected");
         this.Groups.AddToGroupAsync(Context.ConnectionId, Context.ConnectionId);
-        this.Clients.Group(Context.ConnectionId).SendAsync("Connected", Context.ConnectionId);
+        this.Clients.Group(Context.ConnectionId).SendAsync("connected", Context.ConnectionId);
         return base.OnConnectedAsync();
     }
 

@@ -1,20 +1,16 @@
-using Microsoft.AspNetCore.Mvc.Rendering;
-
 namespace Web.Gateway.Models;
 
 public class QueryLogModel
 {
-    public int PageIndex { get; set; } = 1;
-    public int PageSize { get; set; } = 100;
-
-    public List<SelectListItem> PageSizeList { get; set; } = new List<SelectListItem> {
-        new SelectListItem("100", "100"),
-        new SelectListItem("1000", "1000"),
-        new SelectListItem("10000", "10000") };
-
-    public string? Query { get; set; }
-    public string? ApplicationName { get; set; }
+    public string? ApplicationName { get; set; } = string.Empty;
     public int Days { get; set; } = 1;
     public bool EnalbeTail { get; set; }
-    public InfluxResults InfluxResults { get; set; } = null!;
+    public List<Dictionary<string, string>> Items { get; set; } = new List<Dictionary<string, string>>();
+    public string? Level { get; set; } = string.Empty;
+    public List<string> Levels { get; set; } = new List<string>() { "Verbose", "Debug", "Information", "Warning", "Error", "Fatal" };
+    public int PageIndex { get; set; } = 1;
+    public int PageSize { get; set; } = 1000;
+    public string? Query { get; set; }
+    public List<string> Tags { get; set; } = new List<string>();
+    public bool UseCustom { get; set; }
 }

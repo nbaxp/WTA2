@@ -3,18 +3,39 @@
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <link rel="stylesheet" href="~/milligram.min.css" />
+    <link rel="stylesheet" href="~/lib/pure-min.css" />
+    @RenderSection("styles")
     <title>网关、配置、日志</title>
 </head>
 <body>
     <div id="app">
-      @RenderBody()
+        <div class="header">
+            <div class="pure-menu pure-menu-horizontal">
+                <ul class="pure-menu-list">
+                    <li class="pure-menu-item">
+                        <a href="#" class="pure-menu-link">日志</a>
+                    </li>
+                    <li class="pure-menu-item">
+                        <a href="#" class="pure-menu-link">配置</a>
+                    </li>
+                    <li class="pure-menu-item">
+                        <a href="#" class="pure-menu-link">网关</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+        <div class="pure-g">
+            <div class="pure-u">
+                @RenderBody()
+            </div>
+        </div>
     </div>
+    <script src="~/lib/vue.global.prod.js"></script>
+    <script src="~/lib/signalr.min.js"></script>
+    <script src="~/lib/pubsub.min.js"></script>
     @RenderSection("scripts")
-    <script src="~/signalr.min.js"></script>
-    <script type="module">
-        import { createApp } from '@Url.Content("~/petite-vue.es.js")';
-        const app = window.pageModule;
+    <script>
+        var connectionId = null;
         const connection = new signalR.HubConnectionBuilder().withUrl('@Url.Content("~/hub")').build();
         const connect = () => {
             if (connection.state === signalR.HubConnectionState.Disconnected) {
@@ -32,19 +53,17 @@
         connection.onclose(function () {
             connect();
         });
-        connection.on('Connected', function (id) {
-            window.connectionId = id;
-            setTimeout(() => {
-                connection.invoke('setTail', app.model.enalbeTail,window.connectionId).then(() => {
-                    console.log(app.model.enalbeTail);
-                });;
-            },0);
+        connection.on('connected', function (id) {
+            connectionId = id;
+            connection.invoke('setTail', model.enalbeTail, connectionId).then(() => {
+                console.log(model.enalbeTail);
+            });
         });
         connection.on('notify', function (results) {
-            console.log(results);
+            PubSub.publish('notify', results);
         });
         connect();
-        createApp(app).mount('#app');
-    </script>    
+        Vue.createApp(app).mount('#app');
+    </script>
 </body>
 </html>

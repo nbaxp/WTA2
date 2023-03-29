@@ -1,35 +1,86 @@
 ﻿@model QueryLogModel
+@section styles{
+    <style>
+        .white-space-nowrap {
+            white-space: nowrap;
+        }
 
+        .pure-form select {
+            padding-top: 0;
+            padding-bottom: 0;
+        }
+    </style>
+}
 @section scripts{
     <script>
-        window.pageModule = {
-            model: (@Json.Serialize(Model))
+        const model = Vue.reactive((@Json.Serialize(Model)));
+        var app = {
+            setup() {
+                const toggle = (item) => {
+                    item.show = !item.show;
+                };
+                Vue.onMounted(() => {
+                    PubSub.subscribe('notify', (method, data) => {
+                        model.items = data.concat(model.items).slice(0, model.pageSize);
+                    });
+                });
+                return {
+                    model,
+                    toggle
+                }
+            }
         };
     </script>
 }
-
-<form asp-controller="Home" asp-action="Index" method="get">
-    <p>
-        @Html.EditorFor(o=>o.Query)
-        @Html.EditorFor(o=>o.EnalbeTail)
-        <input type="submit" value="Filter" />
-    </p>
-    <table :title="model.influxResults.results[0].series[0].name">
-        <thead>
-            <tr>
-                <th>时间</th>
-                <th>应用</th>
-                <th>日志</th>
-            </tr>
-        </thead>
-        <tbody>
-            <tr v-for="item in model.influxResults.results[0].series[0].values">
-                <td>{{new Date(item[model.influxResults.results[0].series[0].columns.indexOf('time')]).toLocaleString()}}</td>
-                <td>{{item[model.influxResults.results[0].series[0].columns.indexOf('ApplicationName')]}}</td>
-                <td>{{item[model.influxResults.results[0].series[0].columns.indexOf('RenderedMessage')]}}</td>
-            </tr>
-        </tbody>
-    </table>
-    @Html.DropDownListFor(o=>o.PageSize,Model.PageSizeList)
+<form asp-controller="Home" asp-action="Index" method="get" class="pure-form">
+    <input name="query" type="text" v-model="model.query" placeholder="InfluxQL" style="width:100%" />
+    <br />
+    <br />
+    <select id="applicationName" name="applicationName" v-model="model.applicationName">
+        <option value="">选择应用</option>
+        <option v-for="item in model.tags" :value="item">{{item}}</option>
+    </select>
+    <select id="levle" name="level" v-model="model.level">
+        <option value="">选择级别</option>
+        <option v-for="item in model.levels" :value="item">{{item}}</option>
+    </select>
+    <label for="enalbeTail">
+        实时
+        <input name="enalbeTail" id="enalbeTail" type="checkbox" v-model="model.enalbeTail" :value="model.enalbeTail" />
+    </label>
+    <label for="enalbeTail">
+        数量
+        <input name="pageSize" data-role="spinner" data-min-value="0" data-max-value="10000" type="number" v-model="model.pageSize" placeholder="数量" />
+    </label>
+    <label for="useCustom">
+        自定义查询
+        <input name="useCustom" id="useCustom" type="checkbox" v-model="model.useCustom" :value="model.useCustom" />
+    </label>
+    <input type="submit" class="pure-button pure-button-primary" value="查询" style="margin-left:1em;">
 </form>
+<br />
+<table class="pure-table pure-table-striped">
+    <thead>
+        <tr>
+            <th>时间</th>
+            <th>应用</th>
+            <th>级别</th>
+            <th>日志</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr v-for="(item,index) in model.items" v-on:click="toggle(item)">
+            <td class="white-space-nowrap">{{new Date(item.time).toLocaleString()}}</td>
+            <td class="white-space-nowrap">{{item.applicationName}}</td>
+            <td class="white-space-nowrap">{{item.level}}</td>
+            <td>
+                {{item.renderedMessage}}
+                <div v-if="item.show">
+                    {{item}}
+                </div>
+            </td>
+        </tr>
+    </tbody>
+</table>
+
 
