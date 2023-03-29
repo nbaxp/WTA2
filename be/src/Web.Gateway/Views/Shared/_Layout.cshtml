@@ -4,13 +4,13 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <link rel="stylesheet" href="~/lib/pure-min.css" />
-    @RenderSection("styles")
-    <title>网关、配置、日志</title>
+    @RenderSection("styles",false)
+    <title>网关</title>
 </head>
-<body>
-    <div id="app">
-        <div class="header">
-            <div class="pure-menu pure-menu-horizontal">
+<body style="padding:0;margin:auto;">
+    <div id="app" style="width:100vw;min-height:100vh;">
+        <div class="header" style="height:40px;">
+            <div class="home-menu pure-menu pure-menu-horizontal" style="display:inline-flex;justify-content:space-between;">
                 <ul class="pure-menu-list">
                     <li class="pure-menu-item">
                         <a href="#" class="pure-menu-link">日志</a>
@@ -22,10 +22,24 @@
                         <a href="#" class="pure-menu-link">网关</a>
                     </li>
                 </ul>
+                <ul class="pure-menu-list">
+                    <li class="pure-menu-item">
+                        @if (User.Identity!.IsAuthenticated)
+                        {
+                            <form method="post" action="@Url.Action("Logout","Account",new{ReturnUrl=this.Context.Request.Path})">
+                                <button type="submit" class="pure-button">退出</button>
+                            </form>
+                        }
+                        else
+                        {
+                            <a href="@Url.Action("Login","Account")" class="pure-button">登录</a>
+                        }
+                    </li>
+                </ul>
             </div>
         </div>
-        <div class="pure-g">
-            <div class="pure-u">
+        <div class="pure-g" style="height:calc(100vh - 40px)">
+            <div class="pure-u" style="width:100%;height:100%;">
                 @RenderBody()
             </div>
         </div>
@@ -33,7 +47,7 @@
     <script src="~/lib/vue.global.prod.js"></script>
     <script src="~/lib/signalr.min.js"></script>
     <script src="~/lib/pubsub.min.js"></script>
-    @RenderSection("scripts")
+    @RenderSection("scripts",false)
     <script>
         var connectionId = null;
         const connection = new signalR.HubConnectionBuilder().withUrl('@Url.Content("~/hub")').build();

@@ -16,8 +16,16 @@
         const model = Vue.reactive((@Json.Serialize(Model)));
         var app = {
             setup() {
+                const colorMap = new Map([
+                    ['Warning', 'darkred'],
+                    ['Error', 'red'],
+                    ['Debug', 'yellow']
+                ]);
                 const toggle = (item) => {
                     item.show = !item.show;
+                };
+                const getColor = (item) => {
+                    return colorMap.get(item) ?? 'green';
                 };
                 Vue.onMounted(() => {
                     PubSub.subscribe('notify', (method, data) => {
@@ -26,7 +34,8 @@
                 });
                 return {
                     model,
-                    toggle
+                    toggle,
+                    getColor
                 }
             }
         };
@@ -72,7 +81,7 @@
         <tr v-for="(item,index) in model.items" v-on:click="toggle(item)">
             <td class="white-space-nowrap">{{new Date(item.time).toLocaleString()}}</td>
             <td class="white-space-nowrap">{{item.applicationName}}</td>
-            <td class="white-space-nowrap">{{item.level}}</td>
+            <td class="white-space-nowrap" :style="{color:getColor(item.level)}">{{item.level}}</td>
             <td>
                 {{item.renderedMessage}}
                 <div v-if="item.show">

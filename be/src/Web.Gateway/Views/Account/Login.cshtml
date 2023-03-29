@@ -1,0 +1,20 @@
+﻿@model LoginModel
+@section styles{
+    <style>
+        .field-validation-valid, .field-validation-error {
+            display: block;
+            min-width: 1.5em;
+            height: 1.5em;
+            color:red;
+        }
+    </style>
+}
+<div style="display:inline-flex;justify-content:center;align-items: center;width:100%;height:100%;box-sizing:border-box;">
+    <form asp-controller="Account" asp-action="Login" method="post" class="pure-form pure-form-aligned" style="margin-bottom:10em;">
+        @Html.ValidationSummary(true)
+        @Html.EditorForModel()
+        @Html.Hidden("ReturnUrl",(ViewBag.ReturnUrl as string))
+        <input type="submit" class="pure-button pure-button-primary" value="登录">
+    </form>
+</div>
+

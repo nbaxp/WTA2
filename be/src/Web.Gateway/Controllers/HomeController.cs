@@ -6,6 +6,7 @@ using Flurl.Util;
 using InfluxDB.Client;
 using InfluxDB.Client.Api.Domain;
 using InfluxDB.Client.Writes;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.SignalR;
 using Web.Gateway.Models;
@@ -36,9 +37,9 @@ public class HomeController : Controller
     }
 
     [HttpGet]
+    [Authorize]
     public async Task<IActionResult> Index(QueryLogModel model)
     {
-        this._logger.LogInformation("test log");
         if (!model.UseCustom || string.IsNullOrEmpty(model.Query))
         {
             var query = $"select * from {Table} where time>now() - {model.Days}d ";
