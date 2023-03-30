@@ -1,0 +1,27 @@
+﻿@model string
+@{
+    var content = System.IO.File.ReadAllText(Model);
+}
+@section scripts{
+    <script>
+        var app = {
+            setup() {
+                Vue.onMounted(() => {
+                    const flask = new CodeFlask('#editor', { language: 'js' });
+                    flask.onUpdate((value) => {
+                        document.getElementById("content").setAttribute("value", value);
+                    });
+                    flask.updateCode(@Json.Serialize(content));
+                });
+            }
+        };
+    </script>
+}
+<div id="editor" style="width:100%;height:calc(100vh - 80px);position:relative;"></div>
+<form asp-controller="Config" asp-action="Edit" method="post" class="pure-form pure-form-aligned" style="width:100%;height:40px;">
+    <input name="file" type="hidden" value="@Model" />
+    <input name="content" id="content" value="@content" type="hidden" />
+    <div style="text-align:center;">
+        <input type="submit" class="pure-button pure-button-primary" value="提交">
+    </div>
+</form>

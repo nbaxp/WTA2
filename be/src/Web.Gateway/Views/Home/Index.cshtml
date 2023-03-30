@@ -40,6 +40,36 @@
             }
         };
     </script>
+    <script>
+        var connectionId = null;
+        const connection = new signalR.HubConnectionBuilder().withUrl('@Url.Content("~/hub")').build();
+        const connect = () => {
+            if (connection.state === signalR.HubConnectionState.Disconnected) {
+                connection
+                    .start()
+                    .then(function () {
+                        console.log('signalr connected');
+                    })
+                    .catch(function (error) {
+                        console.error(error);
+                        setTimeout(connect, 5000);
+                    });
+            }
+        };
+        connection.onclose(function () {
+            connect();
+        });
+        connection.on('connected', function (id) {
+            connectionId = id;
+            connection.invoke('setTail', model.enalbeTail, connectionId).then(() => {
+                console.log(model.enalbeTail);
+            });
+        });
+        connection.on('notify', function (results) {
+            PubSub.publish('notify', results);
+        });
+        connect();
+    </script>
 }
 <form asp-controller="Home" asp-action="Index" method="get" class="pure-form">
     <input name="query" type="text" v-model="model.query" placeholder="InfluxQL" style="width:100%" />

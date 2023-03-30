@@ -47,6 +47,6 @@ public class AccountController : Controller
     public async Task<IActionResult> Logout(string returnUrl)
     {
         await HttpContext.SignOutAsync().ConfigureAwait(false);
-        return LocalRedirect(returnUrl);
+        return RedirectToAction("Index", "Home");
     }
 }

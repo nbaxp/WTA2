@@ -43,7 +43,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "WTA.Application.Logging", "
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "WTA.Web.Infrastructure", "src\Web\WTA.Web.Infrastructure\WTA.Web.Infrastructure.csproj", "{19F2F2FC-44D7-49CE-AA2B-346E65E0DD85}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Web.Gateway", "src\Web.Gateway\Web.Gateway.csproj", "{4A793E8C-F1BE-4AA6-B058-A0A0AF21719E}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Web.Gateway", "src\Web.Gateway\Web.Gateway.csproj", "{4A793E8C-F1BE-4AA6-B058-A0A0AF21719E}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
