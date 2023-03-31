@@ -3,7 +3,6 @@ namespace Web.Gateway.Models;
 public class QueryLogModel
 {
     public string? ApplicationName { get; set; } = string.Empty;
-    public int Days { get; set; } = 1;
     public bool EnalbeTail { get; set; }
     public List<Dictionary<string, string>> Items { get; set; } = new List<Dictionary<string, string>>();
     public string? Level { get; set; } = string.Empty;
@@ -13,4 +12,6 @@ public class QueryLogModel
     public string? Query { get; set; }
     public List<string> Tags { get; set; } = new List<string>();
     public bool UseCustom { get; set; }
+    public DateTime? Start { get; set; } = DateTime.Now.AddDays(-1);
+    public DateTime? End { get; set; } = DateTime.Now;
 }

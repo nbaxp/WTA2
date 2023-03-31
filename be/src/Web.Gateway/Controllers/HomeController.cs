@@ -22,6 +22,7 @@ public class HomeController : Controller
     private readonly IHttpClientFactory _httpClientFactory;
     private readonly IHubContext<PageHub> _hubContext;
     private readonly ILogger<HomeController> _logger;
+
     public HomeController(ILogger<HomeController> logger,
         IConfiguration configuration,
         IHttpClientFactory httpClientFactory,
@@ -42,7 +43,9 @@ public class HomeController : Controller
     {
         if (!model.UseCustom || string.IsNullOrEmpty(model.Query))
         {
-            var query = $"select * from {Table} where time>now() - {model.Days}d ";
+            var start = (model.Start ?? DateTime.Now.AddDays(-1)).ToInvariantString();
+            var end = (model.End ?? DateTime.Now).ToInvariantString();
+            var query = $"select * from {Table} where time>='{start}' and time<='{end}' ";
             if (!string.IsNullOrEmpty(model.ApplicationName))
             {
                 query += $"and {nameof(model.ApplicationName)}='{model.ApplicationName}' ";
@@ -55,13 +58,14 @@ public class HomeController : Controller
             {
                 query += $"and {nameof(model.Level)}='{model.Level}' ";
             }
-            else {
+            else
+            {
                 model.Level = string.Empty;
             }
             query += $"order by time desc limit {model.PageSize} offset {(model.PageIndex - 1) * model.PageSize}";
             model.Query = query;
         }
-        var result = await QueryInfluxDB(model.Query).ConfigureAwait(false);
+        var result = await QueryInfluxDB($"{model.Query}").ConfigureAwait(false);
         if (result != null)
         {
             model.Items = result.Values.Select(o =>

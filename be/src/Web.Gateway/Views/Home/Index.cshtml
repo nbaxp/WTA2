@@ -32,10 +32,14 @@
                         model.items = data.concat(model.items).slice(0, model.pageSize);
                     });
                 });
+                const start = Vue.ref(model.start.slice(0, 16));
+                const end = Vue.ref(model.end.slice(0, 16));
                 return {
                     model,
                     toggle,
-                    getColor
+                    getColor,
+                    start,
+                    end
                 }
             }
         };
@@ -91,6 +95,16 @@
         数量
         <input name="pageSize" data-role="spinner" data-min-value="0" data-max-value="10000" type="number" v-model="model.pageSize" placeholder="数量" />
     </label>
+    <label for="start">
+        开始
+        <input type="datetime-local" v-model="start" placeholder="开始" />
+        <input name="start" type="hidden" :value="new Date(start).toISOString()" />
+    </label>
+    <label for="end">
+        结束
+        <input type="datetime-local" v-model="end" placeholder="结束" />
+        <input name="end" type="hidden" :value="new Date(end).toISOString()" />
+    </label>
     <label for="useCustom">
         自定义查询
         <input name="useCustom" id="useCustom" type="checkbox" v-model="model.useCustom" :value="model.useCustom" />
@@ -98,7 +112,7 @@
     <input type="submit" class="pure-button pure-button-primary" value="查询" style="margin-left:1em;">
 </form>
 <br />
-<table class="pure-table pure-table-striped">
+<table class="pure-table pure-table-striped" style="width:100%;">
     <thead>
         <tr>
             <th>时间</th>
@@ -108,14 +122,21 @@
         </tr>
     </thead>
     <tbody>
-        <tr v-for="(item,index) in model.items" v-on:click="toggle(item)">
+        <tr v-for="(item,index) in model.items">
             <td class="white-space-nowrap">{{new Date(item.time).toLocaleString()}}</td>
             <td class="white-space-nowrap">{{item.applicationName}}</td>
-            <td class="white-space-nowrap" :style="{color:getColor(item.level)}">{{item.level}}</td>
+            <td class="white-space-nowrap" :style="{color:getColor(item.level)}" >{{item.level}}</td>
             <td>
-                {{item.renderedMessage}}
+                <div style="cursor:pointer" v-on:click="toggle(item)">{{item.renderedMessage}}</div>
                 <div v-if="item.show">
-                    {{item}}
+                    <table class="pure-table pure-table-bordered" style="margin:.5em;">
+                        <template v-for="(value,key) in item">
+                            <tr v-if="value">
+                              <td class="white-space-nowrap">{{key}}</td>
+                              <td>{{value}}</td>
+                              </tr>
+                        </template>
+                   </table>
                 </div>
             </td>
         </tr>
