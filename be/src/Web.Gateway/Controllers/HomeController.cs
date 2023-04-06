@@ -41,49 +41,66 @@ public class HomeController : Controller
     [Authorize]
     public async Task<IActionResult> Index(QueryLogModel model)
     {
-        if (!model.UseCustom || string.IsNullOrEmpty(model.Query))
+        try
         {
-            var start = (model.Start ?? DateTime.Now.AddDays(-1)).ToInvariantString();
-            var end = (model.End ?? DateTime.Now).ToInvariantString();
-            var query = $"select * from {Table} where time>='{start}' and time<='{end}' ";
-            if (!string.IsNullOrEmpty(model.ApplicationName))
+            if (!model.UseCustom || string.IsNullOrEmpty(model.Query))
             {
-                query += $"and {nameof(model.ApplicationName)}='{model.ApplicationName}' ";
-            }
-            else
-            {
-                model.ApplicationName = string.Empty;
-            }
-            if (!string.IsNullOrEmpty(model.Level))
-            {
-                query += $"and {nameof(model.Level)}='{model.Level}' ";
-            }
-            else
-            {
-                model.Level = string.Empty;
-            }
-            query += $"order by time desc limit {model.PageSize} offset {(model.PageIndex - 1) * model.PageSize}";
-            model.Query = query;
-        }
-        var result = await QueryInfluxDB($"{model.Query}").ConfigureAwait(false);
-        if (result != null)
-        {
-            model.Items = result.Values.Select(o =>
-            {
-                var dict = new Dictionary<string, string>();
-                for (int i = 0; i < result.Columns.Count; i++)
+                if (!model.Start.HasValue)
                 {
-                    dict.Add(result.Columns[i], o[i]);
+                    model.Start = DateTime.Now.Date;
                 }
-                return dict;
-            }).ToList();
+                if (!model.End.HasValue)
+                {
+                    model.End = DateTime.Now.Date.AddDays(1);
+                }
+                var start = model.Start.Value.ToUniversalTime().ToInvariantString();
+                var end = model.End.Value.ToUniversalTime().ToInvariantString();
+                var query = $"select * from {Table} where time>='{start}' and time<='{end}' ";
+                if (!string.IsNullOrEmpty(model.ApplicationName))
+                {
+                    query += $"and {nameof(model.ApplicationName)}='{model.ApplicationName}' ";
+                }
+                else
+                {
+                    model.ApplicationName = string.Empty;
+                }
+                if (!string.IsNullOrEmpty(model.Level))
+                {
+                    query += $"and {nameof(model.Level)}='{model.Level}' ";
+                }
+                else
+                {
+                    model.Level = string.Empty;
+                }
+                query += $"order by time desc ";
+                query += $"limit {model.PageSize} offset {(model.PageIndex - 1) * model.PageSize}";
+                model.Query = query;
+            }
+            var result = await QueryInfluxDB($"{model.Query}").ConfigureAwait(false);
+            if (result != null)
+            {
+                model.Items = result.Values.Select(o =>
+                {
+                    var dict = new Dictionary<string, string>();
+                    for (int i = 0; i < result.Columns.Count; i++)
+                    {
+                        dict.Add(result.Columns[i], o[i]);
+                    }
+                    return dict;
+                }).ToList();
+            }
+            // tags
+            var tagQuery = $"show tag values on {_connectionValues["database"]} with key={TagKey}";
+            var tagResult = await QueryInfluxDB(tagQuery).ConfigureAwait(false);
+            if (tagResult != null)
+            {
+                model.Tags = tagResult.Values.Select(o => o[1]).ToList();
+            }
         }
-        // tags
-        var tagQuery = $"show tag values on {_connectionValues["database"]} with key={TagKey}";
-        var tagResult = await QueryInfluxDB(tagQuery).ConfigureAwait(false);
-        if (tagResult != null)
+        catch (Exception ex)
         {
-            model.Tags = tagResult.Values.Select(o => o[1]).ToList();
+            _logger.LogError(ex, ex.ToString());
+            ModelState.AddModelError("", ex.Message);
         }
         return View(model);
     }

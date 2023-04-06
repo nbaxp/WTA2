@@ -9,7 +9,11 @@
             padding-top: 0;
             padding-bottom: 0;
         }
-    </style>
+
+        label{
+          padding-left:1em;
+        }
+        </style>
 }
 @section scripts{
     <script>
@@ -32,8 +36,8 @@
                         model.items = data.concat(model.items).slice(0, model.pageSize);
                     });
                 });
-                const start = Vue.ref(model.start.slice(0, 16));
-                const end = Vue.ref(model.end.slice(0, 16));
+                const start = Vue.ref(fecha.format(new Date(model.start), "YYYY-MM-DDTHH:mm"));
+                const end = Vue.ref(fecha.format(new Date(model.end), "YYYY-MM-DDTHH:mm"));
                 return {
                     model,
                     toggle,
@@ -65,9 +69,7 @@
         });
         connection.on('connected', function (id) {
             connectionId = id;
-            connection.invoke('setTail', model.enalbeTail, connectionId).then(() => {
-                console.log(model.enalbeTail);
-            });
+            connection.invoke('setTail', model.enalbeTail, connectionId);
         });
         connection.on('notify', function (results) {
             PubSub.publish('notify', results);
@@ -79,35 +81,37 @@
     <input name="query" type="text" v-model="model.query" placeholder="InfluxQL" style="width:100%" />
     <br />
     <br />
+    <label>应用：</label>
     <select id="applicationName" name="applicationName" v-model="model.applicationName">
         <option value="">选择应用</option>
         <option v-for="item in model.tags" :value="item">{{item}}</option>
     </select>
+    <label>级别：</label>
     <select id="levle" name="level" v-model="model.level">
         <option value="">选择级别</option>
         <option v-for="item in model.levels" :value="item">{{item}}</option>
     </select>
-    <label for="enalbeTail">
-        实时
-        <input name="enalbeTail" id="enalbeTail" type="checkbox" v-model="model.enalbeTail" :value="model.enalbeTail" />
-    </label>
-    <label for="enalbeTail">
-        数量
-        <input name="pageSize" data-role="spinner" data-min-value="0" data-max-value="10000" type="number" v-model="model.pageSize" placeholder="数量" />
-    </label>
     <label for="start">
-        开始
+        开始：
         <input type="datetime-local" v-model="start" placeholder="开始" />
-        <input name="start" type="hidden" :value="new Date(start).toISOString()" />
+        <input name="start" type="hidden" :value="start" />
     </label>
     <label for="end">
-        结束
+        结束：
         <input type="datetime-local" v-model="end" placeholder="结束" />
         <input name="end" type="hidden" :value="new Date(end).toISOString()" />
     </label>
+    <label for="enalbeTail">
+        数量：
+        <input name="pageSize" data-role="spinner" data-min-value="0" data-max-value="10000" type="number" v-model="model.pageSize" placeholder="数量" />
+    </label>
     <label for="useCustom">
-        自定义查询
+        自定义查询：
         <input name="useCustom" id="useCustom" type="checkbox" v-model="model.useCustom" :value="model.useCustom" />
+    </label>
+    <label for="enalbeTail">
+        实时刷新：
+        <input name="enalbeTail" id="enalbeTail" type="checkbox" v-model="model.enalbeTail" :value="model.enalbeTail" />
     </label>
     <input type="submit" class="pure-button pure-button-primary" value="查询" style="margin-left:1em;">
 </form>
