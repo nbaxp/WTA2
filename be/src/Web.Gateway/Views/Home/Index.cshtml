@@ -33,7 +33,7 @@
                 };
                 Vue.onMounted(() => {
                     PubSub.subscribe('notify', (method, data) => {
-                        model.items = data.concat(model.items).slice(0, model.pageSize);
+                        model.items = data.filter(o => model.level === '' || o.level === model.level).concat(model.items).slice(0, model.pageSize);
                     });
                 });
                 const start = Vue.ref(fecha.format(new Date(model.start), "YYYY-MM-DDTHH:mm"));
